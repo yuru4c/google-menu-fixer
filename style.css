@@ -1,0 +1,23 @@
+#hdtb-msb {
+	visibility: hidden;
+}
+.gmf-fixed #hdtb-msb {
+	visibility: visible;
+}
+
+.f9UGee:hover {
+	background: rgba(0,0,0,0.1);
+}
+
+
+#hdtb-msb .hdtb-mitem.hdtb-imb {
+	padding-top: 20px !important;
+}
+#hdtb .hdtb-mitem a {
+	padding-top: 8px;
+	padding-bottom: 8px;
+}
+
+.hdtb-mitem a, a.f9UGee {
+	text-decoration: none !important;
+}

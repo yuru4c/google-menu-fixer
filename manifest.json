@@ -1,0 +1,24 @@
+{
+	"manifest_version": 2,
+	"name": "Google 検索のメニューの順序を固定するやつ",
+	"version": "3.6.2.2",
+	"description": "Google 検索のメニューの順序を固定します。「画像はウェブの隣」と手が覚えている方へ",
+	"icons": {
+		"128": "icon128.png"
+	},
+	"permissions": [
+		"https://www.google.co.jp/search",
+		"https://www.google.com/search"
+	],
+	"content_scripts": [
+		{
+			"matches": [
+				"https://www.google.co.jp/search?*",
+				"https://www.google.com/search?*"
+			],
+			"css": ["style.css"],
+			"js": ["script.js"],
+			"run_at": "document_start"
+		}
+	]
+}
