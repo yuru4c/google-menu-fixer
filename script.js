@@ -1,4 +1,8 @@
-chrome.runtime.sendMessage('get', function (prefs) {
+(function ($, _) {
+
+var qName = 'q qs';
+
+_.runtime.sendMessage('get', function (prefs) {
 	var order  = prefs.order; 
 	var length = prefs.length;
 	var orderLength = order.length;
@@ -9,19 +13,18 @@ chrome.runtime.sendMessage('get', function (prefs) {
 		var index = order.indexOf(this.text);
 		this.index = index == -1 ? orderLength : index;
 	}
-	
 	function createQ(item) {
-		var a = document.createElement('a');
-		a.className = 'q qs';
+		var a = $.createElement('a');
+		a.className = qName;
 		a.href = item.href;
 		a.textContent = item.text;
 		return a;
 	}
 	
 	function main() {
-		var vis = document.getElementById('hdtb-msb-vis');
+		var vis = $.getElementById('hdtb-msb-vis');
 		var sel = vis.getElementsByClassName('hdtb-msel')[0];
-		var qs = vis.parentNode.getElementsByClassName('q qs');
+		var qs = vis.parentNode.getElementsByClassName(qName);
 		var i, l = qs.length;
 		var more = qs[l - 1].parentNode;
 		
@@ -48,26 +51,28 @@ chrome.runtime.sendMessage('get', function (prefs) {
 				vis.appendChild(sel);
 				continue;
 			}
-			var div = document.createElement('div');
+			var div = $.createElement('div');
 			div.className = 'hdtb-mitem hdtb-imb';
 			div.appendChild(createQ(items[i]));
 			vis.appendChild(div);
 		}
 		for (; i < l; i++) {
 			var q = createQ(items[i]);
-			q.classList.add('f9UGee');
+			q.className += ' f9UGee';
 			more.appendChild(q);
 		}
 		if (l == length) {
 			more.previousSibling.style.display = 'none';
 		}
 		
-		document.body.classList.add('gmf-fixed');
+		$.body.classList.add('gmf-fixed');
 	}
 	
-	if (document.readyState == 'loading') {
-		document.addEventListener('DOMContentLoaded', main);
+	if ($.readyState == 'loading') {
+		$.addEventListener('DOMContentLoaded', main);
 	} else {
 		main();
 	}
 });
+
+})(document, chrome);
