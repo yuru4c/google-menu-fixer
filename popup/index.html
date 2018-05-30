@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>google-menu-fixer</title>
+	<style>
+		html {
+			user-select: none;
+		}
+		.block {
+			display: block;
+		}
+		textarea {
+			resize: none;
+		}
+		.clear {
+			overflow: hidden;
+		}
+		.right {
+			float: right;
+		}
+		.ok {
+			width: 100%;
+		}
+	</style>
+</head>
+<body>
+	<form name="prefs">
+		<p>
+			<label for="length">長さ: </label>
+			<input type="number" name="length" id="length" min="1">
+		</p>
+		<p>
+			<label class="block" for="order">順序: </label>
+			<textarea name="order" id="order" rows="10"></textarea>
+		</p>
+		<p class="clear">
+			<input type="reset" class="right">
+		</p>
+		<p>
+			<input type="submit" class="ok" value="OK">
+		</p>
+	</form>
+	<script src="script.js"></script>
+</body>
+</html>

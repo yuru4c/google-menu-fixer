@@ -1,12 +1,13 @@
-(function () {
-	var order = ['すべて', 'ウェブ', '画像', '動画', '地図', 'ニュース', 'ショッピング', '書籍', 'アプリ', 'フライト', 'ファイナンス'];
-	var length = order.length, visLength = 5;
+chrome.runtime.sendMessage('get', function (prefs) {
+	var order  = prefs.order; 
+	var length = prefs.length;
+	var orderLength = order.length;
 	
 	function Item(q) {
 		this.text = q.textContent;
 		this.href = q.href;
 		var index = order.indexOf(this.text);
-		this.index = index == -1 ? length : index;
+		this.index = index == -1 ? orderLength : index;
 	}
 	
 	function createQ(item) {
@@ -17,7 +18,7 @@
 		return a;
 	}
 	
-	document.addEventListener('DOMContentLoaded', function () {
+	function main() {
 		var vis = document.getElementById('hdtb-msb-vis');
 		var sel = vis.getElementsByClassName('hdtb-msel')[0];
 		var qs = vis.parentNode.getElementsByClassName('q qs');
@@ -32,14 +33,17 @@
 		});
 		
 		var selIndex = items.indexOf(selItem);
-		if (selIndex >= visLength) {
+		if (selIndex >= length) {
 			items.splice(selIndex, 1);
-			selIndex = visLength - 1;
+			selIndex = length - 1;
 			items.splice(selIndex, 0, selItem);
 		}
 		
+		l = items.length;
+		if (length > l) length = l;
+		
 		vis.innerHTML = more.innerHTML = '';
-		for (i = 0; i < visLength; i++) {
+		for (i = 0; i < length; i++) {
 			if (i == selIndex) {
 				vis.appendChild(sel);
 				continue;
@@ -49,12 +53,21 @@
 			div.appendChild(createQ(items[i]));
 			vis.appendChild(div);
 		}
-		for (l = items.length; i < l; i++) {
+		for (; i < l; i++) {
 			var q = createQ(items[i]);
 			q.classList.add('f9UGee');
 			more.appendChild(q);
 		}
+		if (l == length) {
+			more.previousSibling.style.display = 'none';
+		}
 		
 		document.body.classList.add('gmf-fixed');
-	});
-})();
+	}
+	
+	if (document.readyState == 'loading') {
+		document.addEventListener('DOMContentLoaded', main);
+	} else {
+		main();
+	}
+});
