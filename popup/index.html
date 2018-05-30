@@ -5,21 +5,29 @@
 	<title>google-menu-fixer</title>
 	<style>
 		html {
-			user-select: none;
+			-webkit-user-select: none;
+			        user-select: none;
+			white-space: nowrap;
 		}
-		.block {
+		label, textarea {
 			display: block;
 		}
 		textarea {
 			resize: none;
 		}
-		.clear {
-			overflow: hidden;
+		.number {
+			text-align: right;
+		}
+		.clear:after {
+			content: "";
+			display: block;
+			clear: both;
 		}
 		.right {
 			float: right;
 		}
-		.ok {
+		.wide {
+			box-sizing: border-box;
 			width: 100%;
 		}
 	</style>
@@ -27,18 +35,20 @@
 <body>
 	<form name="prefs">
 		<p>
-			<label for="length">長さ: </label>
-			<input type="number" name="length" id="length" min="1">
+			<label>長さ:
+				<input type="number" name="length" class="number" min="1">
+			</label>
 		</p>
 		<p>
-			<label class="block" for="order">順序: </label>
-			<textarea name="order" id="order" rows="10"></textarea>
+			<label>順序:
+				<textarea name="order" class="wide" rows="10"></textarea>
+			</label>
 		</p>
 		<p class="clear">
 			<input type="reset" class="right">
 		</p>
 		<p>
-			<input type="submit" class="ok" value="OK">
+			<input type="submit" class="wide" value="OK">
 		</p>
 	</form>
 	<script src="script.js"></script>

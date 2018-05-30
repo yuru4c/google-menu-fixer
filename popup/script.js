@@ -1,5 +1,5 @@
 (function ($) {
-	var splitter = '\n';
+	var separator = '\n';
 	var sendMessage = chrome.runtime.sendMessage;
 	
 	$.addEventListener('DOMContentLoaded', function () {
@@ -8,8 +8,8 @@
 		var order  = prefs['order'];
 		
 		function set(items) {
-			length.value = +items.length;
-			order .value = items.order.join(splitter);
+			length.value = items.length;
+			order .value = items.order.join(separator);
 		}
 		sendMessage('get', set);
 		
@@ -20,8 +20,8 @@
 		prefs.onsubmit = function () {
 			var items = {};
 			var ov = order.value, lv = length.value;
-			if (ov != '') items.order  = ov.split(splitter);
-			if (lv != '') items.length = +lv;
+			if (ov) items.order  = ov.split(separator);
+			if (lv) items.length = +lv;
 			sendMessage(items, function () {
 				close();
 			});
