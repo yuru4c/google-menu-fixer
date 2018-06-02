@@ -2,30 +2,45 @@
 <html>
 <head>
 	<meta charset="UTF-8">
-	<title>google-menu-fixer</title>
+	<title>設定</title>
 	<style>
 		html {
 			-webkit-user-select: none;
 			        user-select: none;
-			white-space: nowrap;
 		}
 		label, textarea {
 			display: block;
-		}
-		textarea {
+			white-space: nowrap;
 			resize: none;
 		}
-		.number {
+		input[type=number], #ruler {
 			text-align: right;
 		}
+		#ruler {
+			position: absolute;
+			margin: 1px;
+			border: none;
+			padding-left: 3px;
+			width: 2ch;
+			overflow: hidden;
+			color: darkgray;
+			pointer-events: none;
+		}
+		#o {
+			padding-left: calc(2ch + 8px);
+		}
+		#message {
+			cursor: default;
+		}
+		
 		.clear:after {
 			content: "";
 			display: block;
 			clear: both;
 		}
-		.right {
-			float: right;
-		}
+		.left  { float: left; }
+		.right { float: right; }
+		
 		.wide {
 			box-sizing: border-box;
 			width: 100%;
@@ -36,19 +51,21 @@
 	<form name="prefs">
 		<p>
 			<label>長さ:
-				<input type="number" name="length" class="number" min="1">
+				<input type="number" name="length" min="1">
 			</label>
 		</p>
 		<p>
-			<label>順序:
-				<textarea name="order" class="wide" rows="10"></textarea>
+			<label for="o">順序:
+				<textarea id="ruler" tabindex="-1"></textarea>
+				<textarea name="order" id="o" class="wide" rows="10"></textarea>
 			</label>
 		</p>
 		<p class="clear">
+			<span id="message" class="left"></span>
 			<input type="reset" class="right">
 		</p>
 		<p>
-			<input type="submit" class="wide" value="OK">
+			<input type="submit" class="wide" value="保存して閉じる">
 		</p>
 	</form>
 	<script src="script.js"></script>
