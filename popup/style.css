@@ -1,0 +1,39 @@
+html {
+	-webkit-user-select: none;
+			user-select: none;
+}
+
+label, textarea {
+	display: block;
+	white-space: nowrap;
+	resize: none;
+}
+input[type=number], .ruler {
+	text-align: right;
+}
+
+.gutter {
+	display: block;
+	position: absolute;
+	margin: 1px;
+	overflow: hidden;
+	pointer-events: none;
+}
+.ruler {
+	border: none;
+	overflow: hidden;
+	background: none;
+}
+
+.clear:after {
+	content: "";
+	display: block;
+	clear: both;
+}
+.left  { float: left; }
+.right { float: right; }
+
+.wide {
+	box-sizing: border-box;
+	width: 100%;
+}

@@ -75,12 +75,9 @@ runtime.sendMessage('get', function (prefs) {
 		set(strs);
 		length.oninput = oninput;
 		order .oninput = oninput;
-		
-		var width = ruler.clientWidth - 2;
 		order.onscroll = function () {
 			ruler.scrollTop = this.scrollTop;
-			ruler.style.opacity =
-				(width - this.scrollLeft) / width;
+			ruler.style.marginLeft = -this.scrollLeft + 'px';
 		};
 		
 		form.onreset = function () {
