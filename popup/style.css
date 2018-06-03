@@ -6,6 +6,9 @@ html {
 label, textarea {
 	display: block;
 	white-space: nowrap;
+}
+textarea {
+	line-height: 1.2;
 	resize: none;
 }
 input[type=number], .ruler {
