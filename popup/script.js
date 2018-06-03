@@ -39,10 +39,10 @@ Linter.prototype.read = function (i) {
 
 function marks(length) {
 	var str = '';
-	for (var i = 1; i < length; i++) {
+	for (var i = 1; i <= length; i++) {
 		str += (i + '\n').slice(-3);
 	}
-	return str + length;
+	return str;
 }
 
 runtime.sendMessage('get', function (prefs) {
