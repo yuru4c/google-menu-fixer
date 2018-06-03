@@ -9,58 +9,85 @@ function Strs(prefs) {
 	this.order  = prefs.order.join(separator);
 }
 
+function Texts() {
+	this.fragment = $.createDocumentFragment();
+}
+Texts.prototype.writeln = function (str) {
+	this.fragment.appendChild($.createTextNode(str));
+	this.fragment.appendChild($.createElement('br'));
+};
+
+function Linter(lines) {
+	this.lines = lines;
+	this.nums = {};
+}
+Linter.prototype.read = function (i) {
+	var line = this.lines[i];
+	
+	if (!line) {
+		return '空行';
+	}
+	if (line in this.nums) {
+		return this.nums[line] + '行目と重複';
+	}
+	this.nums[line] = i + 1;
+	
+	if (re.test(line)) {
+		return '行末に空白';
+	}
+};
+
+function marks(length) {
+	var str = '';
+	for (var i = 1; i < length; i++) {
+		str += (i + '\n').slice(-3);
+	}
+	return str + length;
+}
+
 runtime.sendMessage('get', function (prefs) {
 	var strs = new Strs(prefs);
+	
+	function validate(lv, ov, lines, length) {
+		var texts = new Texts();
+		var linter = new Linter(lines);
+		
+		if (!lv) {
+			texts.writeln('空欄');
+		}
+		for (var i = 0; i < length; i++) {
+			var warn = linter.read(i);
+			if (warn) {
+				texts.writeln(i + 1 + '行目: ' + warn);
+			}
+		}
+		if (lv != strs.length || ov != strs.order) {
+			texts.writeln('未保存の変更');
+		}
+		return texts.fragment;
+	}
 	
 	function ready() {
 		var form = $.forms['prefs'];
 		var length = form['length'];
 		var order  = form['order'];
-		var ruler   = $.getElementById('ruler');
-		var message = $.getElementById('message');
+		var ruler = $.getElementById('ruler');
+		var out   = $.getElementById('out');
 		
-		function write(str) {
-			if (message.hasChildNodes()) {
-				message.appendChild($.createElement('br'));
-			}
-			message.appendChild($.createTextNode(str));
-		}
-		var nums;
-		function lint(i, line) {
-			if (!line) {
-				return '空行';
-			}
-			if (line in nums) {
-				return nums[line] + '行目と重複';
-			}
-			nums[line] = i + 1;
-			if (re.test(line)) {
-				return '行末に空白';
-			}
-		}
+		var current = 0;
 		function oninput() {
-			message.innerHTML = '';
 			var lv = length.value, ov = order.value;
-			var marks = '';
-			
-			if (!lv) {
-				write('空欄');
-			}
-			nums = {};
 			var lines = ov.split(separator);
-			for (var i = 0; i < lines.length; i++) {
-				var result = lint(i, lines[i]);
-				if (result) {
-					write(i + 1 + '行目: ' + result);
-				}
-				marks += (i + 1 + '\n').slice(-3);
-			}
-			if (lv != strs.length || ov != strs.order) {
-				write('未保存の変更');
-			}
+			var l = lines.length;
 			
-			ruler.value = marks;
+			if (l != current) {
+				ruler.value = marks(l);
+				current = l;
+			}
 			ruler.style.height = order.clientHeight - 4 + 'px';
+			
+			out.innerHTML = '';
+			out.appendChild(validate(lv, ov, lines, l));
 		}
 		
 		function set(strs) {
@@ -75,6 +102,7 @@ runtime.sendMessage('get', function (prefs) {
 		set(strs);
 		length.oninput = oninput;
 		order .oninput = oninput;
+		
 		order.onscroll = function () {
 			ruler.scrollTop = this.scrollTop;
 			ruler.style.marginLeft = -this.scrollLeft + 'px';
