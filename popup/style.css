@@ -1,6 +1,6 @@
 html {
 	-webkit-user-select: none;
-			user-select: none;
+	        user-select: none;
 }
 
 label, textarea {
@@ -11,7 +11,7 @@ textarea {
 	line-height: 1.2;
 	resize: none;
 }
-input[type=number], .ruler {
+input[type="number"], .ruler {
 	text-align: right;
 }
 
