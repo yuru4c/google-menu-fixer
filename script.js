@@ -69,7 +69,10 @@ _.runtime.sendMessage('get', function (prefs) {
 	}
 	
 	if ($.readyState == 'loading') {
-		$.addEventListener('DOMContentLoaded', main);
+		$.addEventListener('readystatechange', function l(e) {
+			this.removeEventListener(e.type, l);
+			main();
+		});
 	} else {
 		main();
 	}

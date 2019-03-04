@@ -18,14 +18,17 @@ input[type="number"], .ruler {
 .gutter {
 	display: block;
 	position: absolute;
-	margin: 1px;
 	overflow: hidden;
 	pointer-events: none;
 }
 .ruler {
-	border: none;
+	border-color: transparent;
 	overflow: hidden;
 	background: none;
+}
+
+.out {
+	cursor: default;
 }
 
 .clear:after {

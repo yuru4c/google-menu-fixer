@@ -1,4 +1,4 @@
-(function ($, _) {
+(function (window, $, _) {
 
 var separator = '\n';
 var re = /\s$/;
@@ -119,17 +119,20 @@ runtime.sendMessage('get', function (prefs) {
 			var lv = length.value;
 			if (lv) prefs.length = +lv;
 			runtime.sendMessage(prefs, function () {
-				close();
+				window.close();
 			});
 			return false;
 		};
 	}
 	
 	if ($.readyState == 'loading') {
-		$.addEventListener('DOMContentLoaded', ready);
+		$.addEventListener('readystatechange', function l(e) {
+			this.removeEventListener(e.type, l);
+			ready();
+		});
 	} else {
 		ready();
 	}
 });
 
-})(document, chrome);
+})(window, document, chrome);
