@@ -10,6 +10,7 @@ _.runtime.sendMessage('get', function (prefs) {
 	function Item(q) {
 		this.text = q.textContent;
 		this.href = q.href;
+		this.children = q.childNodes;
 		var index = order.indexOf(this.text);
 		this.index = index == -1 ? orderLength : index;
 	}
@@ -17,7 +18,9 @@ _.runtime.sendMessage('get', function (prefs) {
 		var a = $.createElement('a');
 		a.className = qName;
 		a.href = item.href;
-		a.textContent = item.text;
+		while (item.children.length) {
+			a.appendChild(item.children[0]);
+		}
 		return a;
 	}
 	
