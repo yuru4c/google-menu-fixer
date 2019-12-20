@@ -2,11 +2,12 @@
 
 var keys = {
 	order: ['すべて', '画像', '動画', '地図', 'ニュース', '書籍', 'ショッピング', 'フライト', 'ファイナンス'],
-	length: 5
+	length: 5,
+	hide: false
 };
 var local = _.storage.local;
 
-_.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+_.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 	switch (message) {
 		case 'get':
 		local.get(keys, function (items) {

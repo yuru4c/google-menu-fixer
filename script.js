@@ -1,18 +1,18 @@
 (function ($, _) {
 
+var prefix = 'gmf-';
 var qName = 'q qs';
 
 _.runtime.sendMessage('get', function (prefs) {
-	var order  = prefs.order; 
+	var order  = prefs.order;
 	var length = prefs.length;
-	var orderLength = order.length;
+	var hide   = prefs.hide;
 	
 	function Item(q) {
-		this.text = q.textContent;
 		this.href = q.href;
 		this.children = q.childNodes;
-		var index = order.indexOf(this.text);
-		this.index = index == -1 ? orderLength : index;
+		var index = order.indexOf(q.textContent);
+		this.index = index == -1 ? order.length : index;
 	}
 	function createQ(item) {
 		var a = $.createElement('a');
@@ -68,7 +68,11 @@ _.runtime.sendMessage('get', function (prefs) {
 			more.previousSibling.style.display = 'none';
 		}
 		
-		$.body.classList.add('gmf-fixed');
+		var classList = $.body.classList;
+		classList.add(prefix + 'fixed');
+		if (hide) {
+			classList.add(prefix + 'hide');
+		}
 	}
 	
 	if ($.readyState == 'loading') {

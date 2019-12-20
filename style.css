@@ -9,19 +9,7 @@
 	background: rgba(0,0,0,0.1);
 }
 
-/*
-#hdtb-msb .hdtb-mitem.hdtb-imb {
-	padding-top: 20px !important;
+.gmf-hide .exp-outline,
+.gmf-hide .AUiS2 {
+	display: none !important;
 }
-#hdtb-msb .hdtb-mitem.hdtb-msel {
-	padding-top: 28px !important;
-}
-#hdtb .hdtb-mitem a {
-	padding-top: 8px;
-	padding-bottom: 8px;
-}
-
-.hdtb-mitem a, a.f9UGee {
-	text-decoration: none !important;
-}
-*/

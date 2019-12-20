@@ -4,9 +4,10 @@ var separator = '\n';
 var re = /\s$/;
 var runtime = _.runtime;
 
-function Strs(prefs) {
+function Values(prefs) {
 	this.length = prefs.length.toString();
 	this.order  = prefs.order.join(separator);
+	this.hide   = prefs.hide;
 }
 
 function Texts() {
@@ -46,22 +47,21 @@ function marks(length) {
 }
 
 runtime.sendMessage('get', function (prefs) {
-	var strs = new Strs(prefs);
+	var values = new Values(prefs);
 	
-	function validate(lv, ov, lines, length) {
+	function validate(lv, ov, hc, lines) {
 		var texts = new Texts();
-		var linter = new Linter(lines);
-		
 		if (!lv) {
 			texts.writeln('空欄');
 		}
-		for (var i = 0; i < length; i++) {
+		var linter = new Linter(lines);
+		for (var i = 0; i < lines.length; i++) {
 			var warn = linter.read(i);
 			if (warn) {
 				texts.writeln(i + 1 + '行目: ' + warn);
 			}
 		}
-		if (lv != strs.length || ov != strs.order) {
+		if (lv != values.length || ov != values.order || hc != values.hide) {
 			texts.writeln('未保存の変更');
 		}
 		return texts.fragment;
@@ -71,15 +71,18 @@ runtime.sendMessage('get', function (prefs) {
 		var form = $.forms['prefs'];
 		var length = form['length'];
 		var order  = form['order'];
+		var hide   = form['hide'];
 		var ruler = $.getElementById('ruler');
 		var out   = $.getElementById('out');
 		
 		var current = 0;
 		function oninput() {
-			var lv = length.value, ov = order.value;
+			var lv = length.value;
+			var ov = order .value;
+			var hc = hide.checked;
+			
 			var lines = ov.split(separator);
 			var l = lines.length;
-			
 			if (l != current) {
 				ruler.value = marks(l);
 				current = l;
@@ -87,25 +90,34 @@ runtime.sendMessage('get', function (prefs) {
 			ruler.style.height = order.clientHeight - 4 + 'px';
 			
 			out.innerHTML = '';
-			out.appendChild(validate(lv, ov, lines, l));
+			out.appendChild(validate(lv, ov, hc, lines));
 		}
 		
-		function set(strs) {
-			length.value = strs.length;
-			order .value = strs.order;
+		function set(values) {
+			length.value = values.length;
+			order .value = values.order;
+			hide.checked = values.hide;
 			oninput();
 		}
 		function reset(prefs) {
-			set(new Strs(prefs));
+			set(new Values(prefs));
 		}
 		
-		set(strs);
+		set(values);
 		length.oninput = oninput;
 		order .oninput = oninput;
+		hide  .onclick = oninput;
 		
 		order.onscroll = function () {
 			ruler.scrollTop = this.scrollTop;
 			ruler.style.marginLeft = -this.scrollLeft + 'px';
+		};
+		
+		function select() {
+			length.select();
+		}
+		length.onfocus = function () {
+			window.setTimeout(select);
 		};
 		
 		form.onreset = function () {
@@ -114,7 +126,8 @@ runtime.sendMessage('get', function (prefs) {
 		};
 		form.onsubmit = function () {
 			var prefs = {
-				order: order.value.split(separator)
+				order: order.value.split(separator),
+				hide: hide.checked
 			};
 			var lv = length.value;
 			if (lv) prefs.length = +lv;
