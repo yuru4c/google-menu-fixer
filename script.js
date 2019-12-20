@@ -25,6 +25,11 @@ _.runtime.sendMessage('get', function (prefs) {
 	}
 	
 	function main() {
+		var classList = $.body.classList;
+		if (hide) {
+			classList.add(prefix + 'hide');
+		}
+		
 		var vis = $.getElementById('hdtb-msb-vis');
 		var sel = vis.getElementsByClassName('hdtb-msel')[0];
 		var qs = vis.parentNode.getElementsByClassName(qName);
@@ -68,11 +73,7 @@ _.runtime.sendMessage('get', function (prefs) {
 			more.previousSibling.style.display = 'none';
 		}
 		
-		var classList = $.body.classList;
 		classList.add(prefix + 'fixed');
-		if (hide) {
-			classList.add(prefix + 'hide');
-		}
 	}
 	
 	if ($.readyState == 'loading') {
