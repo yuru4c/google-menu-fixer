@@ -1,11 +1,12 @@
-#hdtb-msb {
+#hdtb-msb, .O850f {
 	visibility: hidden;
 }
-.gmf-fixed #hdtb-msb {
+.gmf-fixed #hdtb-msb,
+.gmf-fixed .O850f {
 	visibility: visible;
 }
 
-.f9UGee:hover {
+.f9UGee:hover, .cF4V5c-ibnC6b:hover {
 	background: rgba(0,0,0,0.1);
 }
 
