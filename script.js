@@ -57,7 +57,6 @@ _.runtime.sendMessage('get', function (prefs) {
 		var items = sort.items;
 		var i;
 		
-		sel.remove();
 		for (i = 0; i < as.length; i++) {
 			as[i].remove();
 		}
