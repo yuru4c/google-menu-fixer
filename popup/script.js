@@ -8,6 +8,11 @@ function Values(prefs) {
 	this.length = prefs.length.toString();
 	this.order  = prefs.order.join(separator);
 	this.hide   = prefs.hide;
+	try {
+		this.param = JSON.stringify(prefs.param, null, 2);
+	} catch (e) {
+		this.param = '';
+	}
 }
 
 function Texts() {
@@ -49,7 +54,7 @@ function marks(length) {
 runtime.sendMessage('get', function (prefs) {
 	var values = new Values(prefs);
 	
-	function validate(lv, ov, hc, lines) {
+	function validate(lv, ov, hc, pv, lines) {
 		var texts = new Texts();
 		if (!lv) {
 			texts.writeln('空欄');
@@ -61,7 +66,12 @@ runtime.sendMessage('get', function (prefs) {
 				texts.writeln(i + 1 + '行目: ' + warn);
 			}
 		}
-		if (lv != values.length || ov != values.order || hc != values.hide) {
+		if (
+			lv != values.length ||
+			ov != values.order  ||
+			hc != values.hide   ||
+			pv != values.param)
+		{
 			texts.writeln('未保存の変更');
 		}
 		return texts.fragment;
@@ -72,6 +82,7 @@ runtime.sendMessage('get', function (prefs) {
 		var length = form['length'];
 		var order  = form['order'];
 		var hide   = form['hide'];
+		var param  = form['json'];
 		var ruler = $.getElementById('ruler');
 		var out   = $.getElementById('out');
 		
@@ -80,6 +91,7 @@ runtime.sendMessage('get', function (prefs) {
 			var lv = length.value;
 			var ov = order .value;
 			var hc = hide.checked;
+			var pv = param.value;
 			
 			var lines = ov.split(separator);
 			var l = lines.length;
@@ -90,13 +102,14 @@ runtime.sendMessage('get', function (prefs) {
 			ruler.style.height = order.clientHeight - 4 + 'px';
 			
 			out.innerHTML = '';
-			out.appendChild(validate(lv, ov, hc, lines));
+			out.appendChild(validate(lv, ov, hc, pv, lines));
 		}
 		
 		function set(values) {
 			length.value = values.length;
 			order .value = values.order;
 			hide.checked = values.hide;
+			param.value  = values.param;
 			oninput();
 		}
 		function reset(prefs) {
@@ -104,9 +117,13 @@ runtime.sendMessage('get', function (prefs) {
 		}
 		
 		set(values);
-		length.oninput = oninput;
-		order .oninput = oninput;
-		hide  .onclick = oninput;
+		length.oninput  =
+		length.onchange = oninput;
+		order .oninput  =
+		order .onchange = oninput;
+		hide  .onclick  = oninput;
+		param .oninput  =
+		param .onchange = oninput;
 		
 		order.onscroll = function () {
 			ruler.scrollTop = this.scrollTop;
@@ -131,6 +148,9 @@ runtime.sendMessage('get', function (prefs) {
 			};
 			var lv = length.value;
 			if (lv) prefs.length = +lv;
+			try {
+				prefs.param = JSON.parse(param.value);
+			} catch (e) { }
 			runtime.sendMessage(prefs, function () {
 				window.close();
 			});

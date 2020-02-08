@@ -3,7 +3,12 @@
 var keys = {
 	order: ['すべて', '画像', '動画', '地図', 'ニュース', '書籍', 'ショッピング', 'フライト', 'ファイナンス'],
 	length: 5,
-	hide: false
+	hide: false,
+	param: {
+		tag: 'g-header-menu',
+		selector: '#hdtb-msb, .tAcEof',
+		followup: '.exp-outline, .AUiS2'
+	}
 };
 var local = _.storage.local;
 

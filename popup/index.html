@@ -12,6 +12,24 @@
 		#o {
 			padding-left: calc(2ch + 7px);
 		}
+		#j {
+			font-size: inherit;
+		}
+		#advanced {
+			display: none;
+		}
+		#advanced + label {
+			cursor: pointer;
+		}
+		#advanced + label:after {
+			content: '[－]:';
+		}
+		#advanced:checked + label:after {
+			content: '[＋]';
+		}
+		#advanced:checked ~ #j {
+			display: none;
+		}
 	</style>
 </head>
 <body>
@@ -29,8 +47,16 @@
 				<textarea name="order" class="wide" id="o" rows="10"></textarea>
 			</label>
 		</p>
-		<p class="labels">
-			隠す: <label><input type="checkbox" name="hide"> 他の人はこちらも検索</label>
+		<p>
+			<span class="labels">
+				隠す: <label><input type="checkbox" name="hide"> 他の人はこちらも検索</label>
+			</span>
+			<br>
+			<label class="labels" for="j">
+				<input type="checkbox" checked id="advanced">
+				<label for="advanced">詳細設定 </label>
+				<textarea name="json" class="wide" id="j" rows="8"></textarea>
+			</label>
 		</p>
 		<p class="clear">
 			<span class="left" id="out"></span>

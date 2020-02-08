@@ -1,7 +1,5 @@
 (function ($, _) {
 
-var prefix = 'gmf-';
-
 function Attribute(attribute) {
 	this.name  = attribute.name;
 	this.value = attribute.value;
@@ -47,6 +45,21 @@ Template.prototype.close = function (a) {
 	return element;
 };
 
+function setStyle(param, hide) {
+	var style = $.createElement('style');
+	style.type = 'text/css';
+	$.head.appendChild(style);
+	var sheet = style.sheet;
+	
+	var selector = param.selector;
+	sheet.insertRule(selector + '{ visibility: hidden; }', 0);
+	if (hide) {
+		var followup = param.followup;
+		sheet.insertRule(followup + '{ display: none !important; }', 1);
+	}
+	return sheet;
+}
+
 function findSel(vis, as) {
 	var children = vis.children;
 	for (var i = 0; i < as.length; i++) {
@@ -68,6 +81,7 @@ function findLast(vis, as, ghm) {
 		a = parent;
 	}
 }
+
 function removeAll(as, vis, ghm) {
 	for (var i = 0; i < as.length; i++) {
 		var a = as[i];
@@ -86,6 +100,9 @@ _.runtime.sendMessage('get', function (prefs) {
 	var order  = prefs.order;
 	var length = prefs.length;
 	var hide   = prefs.hide;
+	var param  = prefs.param;
+	
+	var sheet = setStyle(param, hide);
 	
 	function Item(a) {
 		this.href = a.href;
@@ -96,7 +113,7 @@ _.runtime.sendMessage('get', function (prefs) {
 	Item.prototype.create = function (template) {
 		var a = template.a.create();
 		a.href = this.href;
-		while (this.children.length) {
+		while (this.children.length > 0) {
 			a.appendChild(this.children[0]);
 		}
 		return template.close(a);
@@ -105,7 +122,7 @@ _.runtime.sendMessage('get', function (prefs) {
 	function Sort(sel, as) {
 		var selItem = new Item(sel);
 		var items = [selItem];
-		for (var i = 0, l = as.length; i < l; i++) {
+		for (var i = 0; i < as.length; i++) {
 			items.push(new Item(as[i]));
 		}
 		items.sort(function (a, b) {
@@ -145,8 +162,8 @@ _.runtime.sendMessage('get', function (prefs) {
 		this.element.insertBefore(element, ref);
 	};
 	
-	function sub() {
-		var ghm = $.getElementsByTagName('g-header-menu')[0];
+	function main() {
+		var ghm = $.getElementsByTagName(param.tag)[0];
 		var as = ghm.parentNode.querySelectorAll('a[href]');
 		var vis  = new Vis(as[0], as[1]);
 		var more = new Vis(as[as.length - 1], as[as.length - 2]);
@@ -172,14 +189,8 @@ _.runtime.sendMessage('get', function (prefs) {
 		if (items.length == sort.length) {
 			more.element.previousSibling.style.display = 'none';
 		}
-	}
-	function main() {
-		var classList = $.body.classList;
-		if (hide) {
-			classList.add(prefix + 'hide');
-		}
-		sub();
-		classList.add(prefix + 'fixed');
+		
+		sheet.deleteRule(0);
 	}
 	
 	if ($.readyState == 'loading') {
