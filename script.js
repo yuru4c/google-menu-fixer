@@ -2,6 +2,86 @@
 
 var prefix = 'gmf-';
 
+function Attribute(attribute) {
+	this.name  = attribute.name;
+	this.value = attribute.value;
+}
+
+function Element(element) {
+	this.tagName = element.tagName;
+	this.attributes = [];
+	var attributes = element.attributes;
+	for (var i = 0; i < attributes.length; i++) {
+		var attribute = new Attribute(attributes[i]);
+		if (attribute.name != 'href') {
+			this.attributes.push(attribute);
+		}
+	}
+}
+Element.prototype.create = function (child) {
+	var element = $.createElement(this.tagName);
+	for (var i = 0; i < this.attributes.length; i++) {
+		var attribute = this.attributes[i];
+		element.setAttribute(attribute.name, attribute.value);
+	}
+	if (child != null) {
+		element.appendChild(child);
+	}
+	return element;
+};
+
+function Template(a, ancestor) {
+	this.a = new Element(a);
+	this.ancestors = [];
+	var parent = a.parentNode;
+	while (parent != ancestor) {
+		this.ancestors.push(new Element(parent));
+		parent = parent.parentNode;
+	}
+}
+Template.prototype.close = function (a) {
+	var element = a;
+	for (var i = 0; i < this.ancestors.length; i++) {
+		element = this.ancestors[i].create(element);
+	}
+	return element;
+};
+
+function findSel(vis, as) {
+	var children = vis.children;
+	for (var i = 0; i < as.length; i++) {
+		var child = children[i];
+		if (!child.contains(as[i])) {
+			return child;
+		}
+	}
+}
+function findLast(vis, as, ghm) {
+	var i;
+	for (i = 1; i < as.length; i++) {
+		if (ghm.contains(as[i])) break;
+	}
+	var a = as[i - 1];
+	while (a != null) {
+		var parent = a.parentNode;
+		if (parent == vis) return a;
+		a = parent;
+	}
+}
+function removeAll(as, vis, ghm) {
+	for (var i = 0; i < as.length; i++) {
+		var a = as[i];
+		while (a != null) {
+			var parent = a.parentNode;
+			if (parent == vis || parent == ghm) {
+				parent.removeChild(a);
+				break;
+			}
+			a = parent;
+		}
+	}
+}
+
 _.runtime.sendMessage('get', function (prefs) {
 	var order  = prefs.order;
 	var length = prefs.length;
@@ -13,14 +93,13 @@ _.runtime.sendMessage('get', function (prefs) {
 		var index = order.indexOf(a.textContent);
 		this.index = index == -1 ? order.length : index;
 	}
-	Item.prototype.createA = function (className) {
-		var a = $.createElement('a');
-		a.className = className;
+	Item.prototype.create = function (template) {
+		var a = template.a.create();
 		a.href = this.href;
 		while (this.children.length) {
 			a.appendChild(this.children[0]);
 		}
-		return a;
+		return template.close(a);
 	};
 	
 	function Sort(sel, as) {
@@ -46,86 +125,60 @@ _.runtime.sendMessage('get', function (prefs) {
 			items.length : length;
 	}
 	
-	function newer() {
-		var vis = $.getElementsByClassName('T47uwc')[0];
-		var sel = vis.getElementsByClassName('rQEFy')[0];
-		var last = vis.lastChild;
-		var as = vis.querySelectorAll('[jsname="ONH4Gc"]');
-		var more = as[as.length - 1].parentNode;
+	function Vis(a0, a1) {
+		var p = a0, q = a1;
+		while (p != null && q != null) {
+			p = p.parentNode;
+			q = q.parentNode;
+			if (p == q) break;
+		}
+		this.element = p;
+		this.template = new Template(a0, p);
+	}
+	Vis.prototype.insert = function (item, ref) {
+		var element;
+		if (item instanceof Item) {
+			element = item.create(this.template);
+		} else {
+			element = item;
+		}
+		this.element.insertBefore(element, ref);
+	};
+	
+	function sub() {
+		var ghm = $.getElementsByTagName('g-header-menu')[0];
+		var as = ghm.parentNode.querySelectorAll('a[href]');
+		var vis  = new Vis(as[0], as[1]);
+		var more = new Vis(as[as.length - 1], as[as.length - 2]);
+		var sel  = findSel(vis.element, as);
+		var last = findLast(vis.element, as, ghm).nextSibling;
+		if (last == sel) last = last.nextSibling;
 		
 		var sort = new Sort(sel, as);
 		var items = sort.items;
 		var i;
 		
-		for (i = 0; i < as.length; i++) {
-			as[i].remove();
-		}
-		function stop(e) {
-			e.stopPropagation();
-		}
-		
-		var a;
+		removeAll(as, vis.element, more.element);
 		for (i = 0; i < sort.length; i++) {
 			if (i == sort.index) {
-				vis.insertBefore(sel, last);
+				vis.insert(sel, last);
 				continue;
 			}
-			a = items[i].createA('NZmxZe');
-			a.addEventListener('click', stop);
-			vis.insertBefore(a, last);
+			vis.insert(items[i], last);
 		}
 		for (; i < items.length; i++) {
-			a = items[i].createA('cF4V5c-ibnC6b');
-			a.addEventListener('click', stop);
-			more.appendChild(a);
+			more.insert(items[i]);
 		}
 		if (items.length == sort.length) {
-			more.previousSibling.style.display = 'none';
+			more.element.previousSibling.style.display = 'none';
 		}
 	}
-	function older(vis) {
-		var qName = 'q qs', moreName = qName + ' f9UGee';
-		var sel = vis.getElementsByClassName('hdtb-msel')[0];
-		var qs = vis.parentNode.getElementsByClassName(qName);
-		var more = qs[qs.length - 1].parentNode;
-		
-		var sort = new Sort(sel, qs);
-		var items = sort.items;
-		var i;
-		
-		vis.innerHTML = more.innerHTML = '';
-		
-		for (i = 0; i < sort.length; i++) {
-			if (i == sort.index) {
-				vis.appendChild(sel);
-				continue;
-			}
-			var div = $.createElement('div');
-			div.className = 'hdtb-mitem hdtb-imb';
-			div.appendChild(items[i].createA(qName));
-			vis.appendChild(div);
-		}
-		for (; i < items.length; i++) {
-			more.appendChild(items[i].createA(moreName));
-		}
-		if (items.length == sort.length) {
-			more.previousSibling.style.display = 'none';
-		}
-	}
-	
 	function main() {
 		var classList = $.body.classList;
 		if (hide) {
 			classList.add(prefix + 'hide');
 		}
-		
-		var vis = $.getElementById('hdtb-msb-vis');
-		if (vis == null) {
-			newer();
-		} else {
-			older(vis);
-		}
-		
+		sub();
 		classList.add(prefix + 'fixed');
 	}
 	
