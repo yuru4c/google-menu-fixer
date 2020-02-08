@@ -5,9 +5,9 @@ var keys = {
 	length: 5,
 	hide: false,
 	param: {
-		tag: 'g-header-menu',
+		followup: '.exp-outline, .AUiS2',
 		selector: '#hdtb-msb, .tAcEof',
-		followup: '.exp-outline, .AUiS2'
+		tag: 'g-header-menu'
 	}
 };
 var local = _.storage.local;
