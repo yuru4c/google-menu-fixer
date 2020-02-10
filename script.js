@@ -1,19 +1,19 @@
 (function ($, _) {
 
-function Attribute(attribute) {
-	this.name  = attribute.name;
-	this.value = attribute.value;
+function Attribute(name, value) {
+	this.name  = name;
+	this.value = value;
 }
 
-function Element(element) {
+function Element(element, isA) {
 	this.tagName = element.tagName;
 	this.attributes = [];
 	var attributes = element.attributes;
 	for (var i = 0; i < attributes.length; i++) {
-		var attribute = new Attribute(attributes[i]);
-		if (attribute.name != 'href') {
-			this.attributes.push(attribute);
-		}
+		var attribute = attributes[i];
+		var name = attribute.name;
+		if (isA && name == 'href') continue;
+		this.attributes.push(new Attribute(name, attribute.value));
 	}
 }
 Element.prototype.create = function (child) {
@@ -28,14 +28,17 @@ Element.prototype.create = function (child) {
 	return element;
 };
 
-function Template(a, ancestor) {
-	this.a = new Element(a);
+function Template(a0, a1) {
+	this.a = new Element(a0, true);
 	this.ancestors = [];
-	var parent = a.parentNode;
-	while (parent != ancestor) {
-		this.ancestors.push(new Element(parent));
-		parent = parent.parentNode;
+	var p = a0.parentNode;
+	var q = a1.parentNode;
+	while (p != q) {
+		this.ancestors.push(new Element(p));
+		p = p.parentNode;
+		q = q.parentNode;
 	}
+	this.parent = p;
 }
 Template.prototype.close = function (a) {
 	var element = a;
@@ -61,7 +64,7 @@ function setStyle(param, hide) {
 }
 
 function findSel(vis, as) {
-	var children = vis.children;
+	var children = vis.childNodes;
 	for (var i = 0; i < as.length; i++) {
 		var child = children[i];
 		if (!child.contains(as[i])) {
@@ -74,20 +77,18 @@ function findLast(vis, as, ghm) {
 	for (i = 1; i < as.length; i++) {
 		if (ghm.contains(as[i])) break;
 	}
-	var a = as[i - 1];
-	while (a != null) {
+	for (var a = as[i - 1]; ; ) {
 		var parent = a.parentNode;
 		if (parent == vis) return a;
 		a = parent;
 	}
 }
 
-function removeAll(as, vis, ghm) {
+function removeAll(as, vis, more) {
 	for (var i = 0; i < as.length; i++) {
-		var a = as[i];
-		while (a != null) {
+		for (var a = as[i]; ; ) {
 			var parent = a.parentNode;
-			if (parent == vis || parent == ghm) {
+			if (parent == vis || parent == more) {
 				parent.removeChild(a);
 				break;
 			}
@@ -97,6 +98,8 @@ function removeAll(as, vis, ghm) {
 }
 
 _.runtime.sendMessage('get', function (prefs) {
+	if (prefs.wait) return;
+	
 	var order  = prefs.order;
 	var length = prefs.length;
 	var hide   = prefs.hide;
@@ -143,14 +146,8 @@ _.runtime.sendMessage('get', function (prefs) {
 	}
 	
 	function Vis(a0, a1) {
-		var p = a0, q = a1;
-		while (p != null && q != null) {
-			p = p.parentNode;
-			q = q.parentNode;
-			if (p == q) break;
-		}
-		this.element = p;
-		this.template = new Template(a0, p);
+		this.template = new Template(a0, a1);
+		this.element = this.template.parent;
 	}
 	Vis.prototype.insert = function (item, ref) {
 		var element;
@@ -187,7 +184,7 @@ _.runtime.sendMessage('get', function (prefs) {
 			more.insert(items[i]);
 		}
 		if (items.length == sort.length) {
-			more.element.previousSibling.style.display = 'none';
+			ghm.style.display = 'none';
 		}
 		
 		sheet.deleteRule(0);

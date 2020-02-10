@@ -31,11 +31,11 @@ input[type="number"], .ruler {
 	background: none;
 }
 
+.margin {
+	margin-top: 0.5em;
+}
 .labels label {
 	display: inline-block;
-}
-.labels + label {
-	margin-top: 0.5em;
 }
 
 .clear:after {
@@ -49,4 +49,8 @@ input[type="number"], .ruler {
 .wide {
 	box-sizing: border-box;
 	width: 100%;
+}
+
+.dirty {
+	box-shadow: inset 0 -3px 0 0 #4285f4;
 }

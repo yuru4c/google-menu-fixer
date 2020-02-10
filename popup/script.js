@@ -8,6 +8,7 @@ var runtime = _.runtime;
 function Values(prefs) {
 	this.length = prefs.length.toString();
 	this.order  = prefs.order.join(separator);
+	this.wait   = prefs.wait;
 	this.hide   = prefs.hide;
 	try {
 		this.param = JSON.stringify(prefs.param, null, 2);
@@ -15,6 +16,22 @@ function Values(prefs) {
 		this.param = '';
 	}
 }
+
+function Inputs(wait, length, order, hide, param) {
+	this.length = length.value;
+	this.order  = order .value;
+	this.param  = param .value;
+	this.wait   = wait.checked;
+	this.hide   = hide.checked;
+}
+Inputs.prototype.isDirty = function (values) {
+	for (var key in values) {
+		if (this[key] != values[key]) {
+			return true;
+		}
+	}
+	return false;
+};
 
 function Texts() {
 	this.fragment = $.createDocumentFragment();
@@ -55,9 +72,9 @@ function marks(length) {
 runtime.sendMessage('get', function (prefs) {
 	var values = new Values(prefs);
 	
-	function validate(lv, ov, hc, pv, lines) {
+	function validate(inputs, lines) {
 		var texts = new Texts();
-		if (!lv) {
+		if (!inputs.length) {
 			texts.writeln('空欄');
 		}
 		var linter = new Linter(lines);
@@ -67,19 +84,18 @@ runtime.sendMessage('get', function (prefs) {
 				texts.writeln(i + 1 + '行目: ' + warn);
 			}
 		}
-		if (
-			lv != values.length ||
-			ov != values.order  ||
-			hc != values.hide   ||
-			pv != values.param)
-		{
+		if (inputs.isDirty(values)) {
 			texts.writeln('未保存の変更');
+			$.documentElement.className = 'dirty';
+		} else {
+			$.documentElement.className = '';
 		}
 		return texts.fragment;
 	}
 	
 	function ready() {
 		var form = $.forms['prefs'];
+		var wait   = form['wait'];
 		var length = form['length'];
 		var order  = form['order'];
 		var hide   = form['hide'];
@@ -89,12 +105,9 @@ runtime.sendMessage('get', function (prefs) {
 		
 		var current = 0;
 		function oninput() {
-			var lv = length.value;
-			var ov = order .value;
-			var hc = hide.checked;
-			var pv = param.value;
+			var inputs = new Inputs(wait, length, order, hide, param);
 			
-			var lines = ov.split(separator);
+			var lines = inputs.order.split(separator);
 			var l = lines.length;
 			if (l != current) {
 				ruler.value = marks(l);
@@ -103,10 +116,11 @@ runtime.sendMessage('get', function (prefs) {
 			ruler.style.height = order.clientHeight - 4 + 'px';
 			
 			out.innerHTML = '';
-			out.appendChild(validate(lv, ov, hc, pv, lines));
+			out.appendChild(validate(inputs, lines));
 		}
 		
 		function set(values) {
+			wait.checked = values.wait;
 			length.value = values.length;
 			order .value = values.order;
 			hide.checked = values.hide;
@@ -118,24 +132,18 @@ runtime.sendMessage('get', function (prefs) {
 		}
 		
 		set(values);
+		wait  .onchange = oninput;
 		length.oninput  =
 		length.onchange = oninput;
 		order .oninput  =
 		order .onchange = oninput;
-		hide  .onclick  = oninput;
+		hide  .onchange = oninput;
 		param .oninput  =
 		param .onchange = oninput;
 		
 		order.onscroll = function () {
 			ruler.scrollTop = this.scrollTop;
 			ruler.style.marginLeft = -this.scrollLeft + 'px';
-		};
-		
-		function select() {
-			length.select();
-		}
-		length.onfocus = function () {
-			window.setTimeout(select);
 		};
 		
 		form.onreset = function () {
@@ -145,6 +153,7 @@ runtime.sendMessage('get', function (prefs) {
 		form.onsubmit = function () {
 			var prefs = {
 				order: order.value.split(separator),
+				wait: wait.checked,
 				hide: hide.checked
 			};
 			var lv = length.value;

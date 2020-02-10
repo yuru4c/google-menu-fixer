@@ -32,12 +32,13 @@
 <body>
 	<form name="prefs">
 		<p>
-			<label>長さ:
+			<label>
+				<input type="checkbox" name="wait"> 更新まで無効にする
+			</label>
+			<label class="margin">長さ:
 				<input type="number" name="length" min="1">
 			</label>
-		</p>
-		<p>
-			<label for="o">順序:
+			<label for="o" class="margin">順序:
 				<span class="gutter">
 					<textarea class="ruler" id="ruler" tabindex="-1"></textarea>
 				</span>
@@ -48,7 +49,7 @@
 			<span class="labels">
 				隠す: <label><input type="checkbox" name="hide"> 他の人はこちらも検索</label>
 			</span>
-			<label class="labels" for="j">
+			<label class="labels margin" for="j">
 				<input type="checkbox" checked id="advanced">
 				<label for="advanced">高度な設定 </label><span>:</span>
 				<textarea name="json" class="wide" id="j" rows="8"></textarea>
