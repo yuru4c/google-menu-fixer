@@ -6,8 +6,8 @@ var JSON = this.JSON;
 var runtime = _.runtime;
 
 function Values(prefs) {
-	this.length = prefs.length.toString();
 	this.order  = prefs.order.join(separator);
+	this.length = prefs.length.toString();
 	this.wait   = prefs.wait;
 	this.hide   = prefs.hide;
 	try {
@@ -161,6 +161,7 @@ runtime.sendMessage('get', function (prefs) {
 			try {
 				prefs.param = JSON.parse(param.value);
 			} catch (e) { }
+			
 			runtime.sendMessage(prefs, function () {
 				window.close();
 			});
