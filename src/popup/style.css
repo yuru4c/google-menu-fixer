@@ -13,7 +13,7 @@ textarea {
 	resize: none;
 }
 input[type="checkbox"] {
-	vertical-align: bottom;
+	vertical-align: top;
 }
 input[type="number"], .ruler {
 	text-align: right;
