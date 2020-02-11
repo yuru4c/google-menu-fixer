@@ -1,6 +1,7 @@
-(function (window, $, _) {
+(function (global, window, $, _) {
+'use strict';
 
-var JSON = this.JSON;
+var JSON = global.JSON;
 
 var separator = '\n';
 var re = /\s$/;
@@ -19,8 +20,8 @@ function Values(prefs) {
 }
 
 function Inputs(wait, length, order, hide, param) {
-	this.length = length.value;
 	this.order  = order .value;
+	this.length = length.value;
 	this.param  = param .value;
 	this.wait   = wait.checked;
 	this.hide   = hide.checked;
@@ -123,7 +124,7 @@ runtime.sendMessage('get', function (prefs) {
 		function set(values) {
 			wait.checked = values.wait;
 			length.value = values.length;
-			order .value = values.order;
+			order.value  = values.order;
 			hide.checked = values.hide;
 			param.value  = values.param;
 			oninput();
@@ -131,21 +132,14 @@ runtime.sendMessage('get', function (prefs) {
 		function reset(prefs) {
 			set(new Values(prefs));
 		}
-		
 		set(values);
-		wait  .onchange = oninput;
-		length.oninput  =
-		length.onchange = oninput;
-		order .oninput  =
-		order .onchange = oninput;
-		hide  .onchange = oninput;
-		param .oninput  =
-		param .onchange = oninput;
 		
 		order.onscroll = function () {
 			ruler.scrollTop = this.scrollTop;
 			ruler.style.marginLeft = -this.scrollLeft + 'px';
 		};
+		form.oninput  = oninput;
+		form.onchange = oninput;
 		
 		form.onreset = function () {
 			runtime.sendMessage('default', reset);
@@ -180,4 +174,4 @@ runtime.sendMessage('get', function (prefs) {
 	}
 });
 
-})(window, document, chrome);
+})(this, window, document, chrome);

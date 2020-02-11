@@ -1,4 +1,5 @@
 (function ($, _) {
+'use strict';
 
 var style = $.createElement('style');
 style.type = 'text/css';
@@ -31,17 +32,9 @@ Element.prototype.create = function (child) {
 	return element;
 };
 
-function Template(a0, a1) {
-	this.a = new Element(a0, true);
-	this.ancestors = [];
-	var p = a0.parentNode;
-	var q = a1.parentNode;
-	while (p != q) {
-		this.ancestors.push(new Element(p));
-		p = p.parentNode;
-		q = q.parentNode;
-	}
-	this.parent = p;
+function Template(a, ancestors) {
+	this.a = new Element(a, true);
+	this.ancestors = ancestors;
 }
 Template.prototype.close = function (a) {
 	var element = a;
@@ -51,14 +44,20 @@ Template.prototype.close = function (a) {
 	return element;
 };
 
-function Menu(a0, a1, ref, parent) {
-	this.template = new Template(a0, a1);
-	this.element = this.template.parent;
-	this.ref = parent == this.element ? ref : null;
+function Menu(a, b, ref, parent) {
+	var ancestors = [];
+	var p = a.parentNode, q = b.parentNode;
+	while (p != q) {
+		ancestors.push(new Element(p));
+		p = p.parentNode;
+		q = q.parentNode;
+	}
+	this.template = new Template(a, ancestors);
+	this.element = p;
+	this.ref = parent == p ? ref : null;
 }
 Menu.prototype.append = function (item) {
-	var element = item.get(this.template);
-	this.element.insertBefore(element, this.ref);
+	this.element.insertBefore(item.get(this.template), this.ref);
 };
 
 function Index(a, order) {
@@ -69,10 +68,6 @@ function Index(a, order) {
 Index.prototype.get = function () {
 	return this.a;
 };
-
-function compare(a, b) {
-	return a.index - b.index;
-}
 
 function Item(a, order) {
 	Index.call(this, a, order);
@@ -91,6 +86,10 @@ Item.prototype.get = function (template) {
 	}
 	return template.close(a);
 };
+
+function compare(x, y) {
+	return x.index - y.index;
+}
 
 function findSel(menu, as) {
 	var children = menu.element.children;
