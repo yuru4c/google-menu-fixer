@@ -1,5 +1,8 @@
 (function ($, _) {
 
+var style = $.createElement('style');
+style.type = 'text/css';
+
 function Attribute(name, value) {
 	this.name  = name;
 	this.value = value;
@@ -9,18 +12,18 @@ function Element(element, isA) {
 	this.tagName = element.tagName;
 	this.attributes = [];
 	var attributes = element.attributes;
-	for (var i = 0; i < attributes.length; i++) {
-		var attribute = attributes[i];
-		var name = attribute.name;
+	for (var i = 0, l = attributes.length; i < l; i++) {
+		var a = attributes[i];
+		var name = a.name;
 		if (isA && name == 'href') continue;
-		this.attributes.push(new Attribute(name, attribute.value));
+		this.attributes.push(new Attribute(name, a.value));
 	}
 }
 Element.prototype.create = function (child) {
 	var element = $.createElement(this.tagName);
 	for (var i = 0; i < this.attributes.length; i++) {
-		var attribute = this.attributes[i];
-		element.setAttribute(attribute.name, attribute.value);
+		var a = this.attributes[i];
+		element.setAttribute(a.name, a.value);
 	}
 	if (child != null) {
 		element.appendChild(child);
@@ -48,23 +51,49 @@ Template.prototype.close = function (a) {
 	return element;
 };
 
-function setStyle(param, hide) {
-	var style = $.createElement('style');
-	style.type = 'text/css';
-	$.head.appendChild(style);
-	var sheet = style.sheet;
-	
-	var selector = param.selector;
-	sheet.insertRule(selector + '{ visibility: hidden; }', 0);
-	if (hide) {
-		var followup = param.followup;
-		sheet.insertRule(followup + '{ display: none !important; }', 1);
-	}
-	return sheet;
+function Menu(a0, a1, ref, parent) {
+	this.template = new Template(a0, a1);
+	this.element = this.template.parent;
+	this.ref = parent == this.element ? ref : null;
+}
+Menu.prototype.append = function (item) {
+	var element = item.get(this.template);
+	this.element.insertBefore(element, this.ref);
+};
+
+function Index(a, order) {
+	this.a = a;
+	var index = order.indexOf(a.textContent);
+	this.index = index == -1 ? order.length : index;
+}
+Index.prototype.get = function () {
+	return this.a;
+};
+
+function compare(a, b) {
+	return a.index - b.index;
 }
 
-function findSel(vis, as) {
-	var children = vis.childNodes;
+function Item(a, order) {
+	Index.call(this, a, order);
+	var children = a.childNodes;
+	this.children = [];
+	this.children.length = children.length;
+	for (var i = 0; i < this.children.length; i++) {
+		this.children[i] = children[i];
+	}
+}
+Item.prototype.get = function (template) {
+	var a = template.a.create();
+	a.href = this.a.href;
+	for (var i = 0; i < this.children.length; i++) {
+		a.appendChild(this.children[i]);
+	}
+	return template.close(a);
+};
+
+function findSel(menu, as) {
+	var children = menu.element.children;
 	for (var i = 0; i < as.length; i++) {
 		var child = children[i];
 		if (!child.contains(as[i])) {
@@ -72,23 +101,12 @@ function findSel(vis, as) {
 		}
 	}
 }
-function findLast(vis, as, ghm) {
-	var i;
-	for (i = 1; i < as.length; i++) {
-		if (ghm.contains(as[i])) break;
-	}
-	for (var a = as[i - 1]; ; ) {
-		var parent = a.parentNode;
-		if (parent == vis) return a;
-		a = parent;
-	}
-}
-
-function removeAll(as, vis, more) {
+function removeAll(as, menu, more) {
+	var m = menu.element, n = more.element;
 	for (var i = 0; i < as.length; i++) {
 		for (var a = as[i]; ; ) {
 			var parent = a.parentNode;
-			if (parent == vis || parent == more) {
+			if (parent == m || parent == n) {
 				parent.removeChild(a);
 				break;
 			}
@@ -99,101 +117,60 @@ function removeAll(as, vis, more) {
 
 _.runtime.sendMessage('get', function (prefs) {
 	if (prefs.wait) return;
-	
 	var order  = prefs.order;
 	var length = prefs.length;
 	var hide   = prefs.hide;
 	var param  = prefs.param;
 	
-	var sheet = setStyle(param, hide);
-	
-	function Item(a) {
-		this.href = a.href;
-		this.children = a.childNodes;
-		var index = order.indexOf(a.textContent);
-		this.index = index == -1 ? order.length : index;
-	}
-	Item.prototype.create = function (template) {
-		var a = template.a.create();
-		a.href = this.href;
-		while (this.children.length > 0) {
-			a.appendChild(this.children[0]);
-		}
-		return template.close(a);
-	};
-	
-	function Sort(sel, as) {
-		var selItem = new Item(sel);
-		var items = [selItem];
-		for (var i = 0; i < as.length; i++) {
-			items.push(new Item(as[i]));
-		}
-		items.sort(function (a, b) {
-			return a.index - b.index;
-		});
-		
-		var index = items.indexOf(selItem);
-		if (index >= length) {
-			items.splice(index, 1);
-			index = length - 1;
-			items.splice(index, 0, selItem);
-		}
-		
-		this.items = items;
-		this.index = index;
-		this.length = length > items.length ?
-			items.length : length;
-	}
-	
-	function Vis(a0, a1) {
-		this.template = new Template(a0, a1);
-		this.element = this.template.parent;
-	}
-	Vis.prototype.insert = function (item, ref) {
-		var element;
-		if (item instanceof Item) {
-			element = item.create(this.template);
-		} else {
-			element = item;
-		}
-		this.element.insertBefore(element, ref);
-	};
+	var sheet = $.head.appendChild(style).sheet;
 	
 	function main() {
 		var ghm = $.getElementsByTagName(param.tag)[0];
-		var as = ghm.parentNode.querySelectorAll('a[href]');
-		var vis  = new Vis(as[0], as[1]);
-		var more = new Vis(as[as.length - 1], as[as.length - 2]);
-		var sel  = findSel(vis.element, as);
-		var last = findLast(vis.element, as, ghm).nextSibling;
-		if (last == sel) last = last.nextSibling;
-		
-		var sort = new Sort(sel, as);
-		var items = sort.items;
+		var parent = ghm.parentNode;
+		var as = parent.querySelectorAll('a[href]');
+		var menu = new Menu(as[0], as[1], ghm, parent);
+		var more = new Menu(as[as.length - 1], as[as.length - 2]);
 		var i;
 		
-		removeAll(as, vis.element, more.element);
-		for (i = 0; i < sort.length; i++) {
-			if (i == sort.index) {
-				vis.insert(sel, last);
-				continue;
-			}
-			vis.insert(items[i], last);
+		var sel = new Index(findSel(menu, as), order);
+		var items = [sel];
+		for (i = 0; i < as.length; i++) {
+			items.push(new Item(as[i], order));
 		}
-		for (; i < items.length; i++) {
-			more.insert(items[i]);
-		}
-		if (items.length == sort.length) {
-			ghm.style.display = 'none';
+		var l = items.length;
+		if (length < l) l = length;
+		
+		items.sort(compare);
+		i = items.indexOf(sel);
+		if (i >= length) {
+			items.splice(i, 1);
+			items.splice(length - 1, 0, sel);
 		}
 		
-		sheet.deleteRule(0);
+		removeAll(as, menu, more);
+		for (i = 0; i < l; i++) {
+			menu.append(items[i]);
+		}
+		for (; i < items.length; i++) {
+			more.append(items[i]);
+		}
+		if (l == items.length) {
+			ghm.style.display = 'none';
+		}
+	}
+	
+	if (hide) {
+		sheet.insertRule(param.followup + '{ display: none !important; }');
 	}
 	
 	if ($.readyState == 'loading') {
+		sheet.insertRule(param.selector + '{ visibility: hidden; }');
+		
 		$.addEventListener('readystatechange', function l(e) {
 			this.removeEventListener(e.type, l);
 			main();
+			
+			sheet.deleteRule(0);
 		});
 	} else {
 		main();

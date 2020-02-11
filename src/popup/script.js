@@ -1,8 +1,9 @@
 (function (window, $, _) {
 
+var JSON = this.JSON;
+
 var separator = '\n';
 var re = /\s$/;
-var JSON = this.JSON;
 var runtime = _.runtime;
 
 function Values(prefs) {
