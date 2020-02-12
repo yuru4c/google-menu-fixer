@@ -1,30 +1,26 @@
 (function (_) {
 'use strict';
 
+var runtime = _.runtime;
+var local = _.storage.local;
+
 var keys = {
 	order: ['すべて', '画像', '動画', '地図', 'ニュース', '書籍', 'ショッピング', 'フライト', 'ファイナンス'],
 	length: 5,
 	wait: false,
 	hide: false,
-	param: {
+	params: {
 		followup: '.exp-outline, .AUiS2',
 		selector: '#hdtb-msb, .tAcEof',
 		tag: 'g-header-menu'
-	},
-	version: 0
+	}
 };
-var version = 0;
-var local = _.storage.local;
+var version = 1;
 
-_.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+function callback(message, sender, sendResponse) {
 	switch (message) {
 		case 'get':
 		local.get(keys, function (items) {
-			var v = items.version;
-			if (v != version) {
-				items.wait = false;
-				items.param = keys.param;
-			}
 			sendResponse(items);
 		});
 		return true;
@@ -33,13 +29,31 @@ _.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 		sendResponse(keys);
 		return;
 	}
-	message.version = version;
 	local.clear(function () {
+		message.version = version;
 		local.set(message, function () {
 			sendResponse();
 		});
 	});
 	return true;
+}
+
+runtime.onInstalled.addListener(function (details) {
+	if (details.reason != runtime.OnInstalledReason.UPDATE) return;
+	local.get(null, function (items) {
+		var key;
+		for (key in items) break;
+		if (key == null) return;
+		
+		var v = 'version' in items ? items['version'] : 0;
+		if (v != version) {
+			items.wait = false;
+			items.params = keys.params;
+			items.version = version;
+			local.set(items);
+		}
+	});
 });
+runtime.onMessage.addListener(callback);
 
 })(chrome);

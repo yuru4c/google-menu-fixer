@@ -2,27 +2,23 @@
 'use strict';
 
 var JSON = global.JSON;
+var runtime = _.runtime;
 
 var separator = '\n';
 var re = /\s$/;
-var runtime = _.runtime;
 
-function Values(prefs) {
-	this.order  = prefs.order.join(separator);
-	this.length = prefs.length.toString();
-	this.wait   = prefs.wait;
-	this.hide   = prefs.hide;
-	try {
-		this.param = JSON.stringify(prefs.param, null, 2);
-	} catch (e) {
-		this.param = '';
-	}
+function Values(options) {
+	this.order  = options.order.join(separator);
+	this.length = options.length.toString();
+	this.wait   = options.wait;
+	this.hide   = options.hide;
+	this.params = JSON.stringify(options.params, null, 2);
 }
 
-function Inputs(wait, length, order, hide, param) {
+function Inputs(wait, length, order, hide, params) {
 	this.order  = order .value;
 	this.length = length.value;
-	this.param  = param .value;
+	this.params = params.value;
 	this.wait   = wait.checked;
 	this.hide   = hide.checked;
 }
@@ -71,106 +67,106 @@ function marks(length) {
 	return str;
 }
 
-runtime.sendMessage('get', function (prefs) {
-	var values = new Values(prefs);
+function validate(inputs, lines, values) {
+	var texts = new Texts();
+	if (!inputs.length) {
+		texts.writeln('空欄');
+	}
+	var linter = new Linter(lines);
+	for (var i = 0; i < lines.length; i++) {
+		var warn = linter.read(i);
+		if (warn) {
+			texts.writeln(i + 1 + '行目: ' + warn);
+		}
+	}
+	if (inputs.isDirty(values)) {
+		texts.writeln('未保存の変更');
+		$.documentElement.className = 'dirty';
+	} else {
+		$.documentElement.className = '';
+	}
+	return texts.fragment;
+}
+
+function ready(values) {
+	var form = $.forms['options'];
+	var wait   = form['wait'];
+	var length = form['length'];
+	var order  = form['order'];
+	var hide   = form['hide'];
+	var params = form['params'];
+	var ruler = $.getElementById('ruler');
+	var out   = $.getElementById('out');
 	
-	function validate(inputs, lines) {
-		var texts = new Texts();
-		if (!inputs.length) {
-			texts.writeln('空欄');
+	var current = 0;
+	function oninput() {
+		var inputs = new Inputs(wait, length, order, hide, params);
+		
+		var lines = inputs.order.split(separator);
+		var l = lines.length;
+		if (l != current) {
+			ruler.value = marks(l);
+			current = l;
 		}
-		var linter = new Linter(lines);
-		for (var i = 0; i < lines.length; i++) {
-			var warn = linter.read(i);
-			if (warn) {
-				texts.writeln(i + 1 + '行目: ' + warn);
-			}
-		}
-		if (inputs.isDirty(values)) {
-			texts.writeln('未保存の変更');
-			$.documentElement.className = 'dirty';
-		} else {
-			$.documentElement.className = '';
-		}
-		return texts.fragment;
+		ruler.style.height = order.clientHeight - 4 + 'px';
+		
+		out.innerHTML = '';
+		out.appendChild(validate(inputs, lines, values));
 	}
 	
-	function ready() {
-		var form = $.forms['prefs'];
-		var wait   = form['wait'];
-		var length = form['length'];
-		var order  = form['order'];
-		var hide   = form['hide'];
-		var param  = form['json'];
-		var ruler = $.getElementById('ruler');
-		var out   = $.getElementById('out');
-		
-		var current = 0;
-		function oninput() {
-			var inputs = new Inputs(wait, length, order, hide, param);
-			
-			var lines = inputs.order.split(separator);
-			var l = lines.length;
-			if (l != current) {
-				ruler.value = marks(l);
-				current = l;
-			}
-			ruler.style.height = order.clientHeight - 4 + 'px';
-			
-			out.innerHTML = '';
-			out.appendChild(validate(inputs, lines));
-		}
-		
-		function set(values) {
-			wait.checked = values.wait;
-			length.value = values.length;
-			order.value  = values.order;
-			hide.checked = values.hide;
-			param.value  = values.param;
-			oninput();
-		}
-		function reset(prefs) {
-			set(new Values(prefs));
-		}
-		set(values);
-		
-		order.onscroll = function () {
-			ruler.scrollTop = this.scrollTop;
-			ruler.style.marginLeft = -this.scrollLeft + 'px';
-		};
-		form.oninput  = oninput;
-		form.onchange = oninput;
-		
-		form.onreset = function () {
-			runtime.sendMessage('default', reset);
-			return false;
-		};
-		form.onsubmit = function () {
-			var prefs = {
-				order: order.value.split(separator),
-				wait: wait.checked,
-				hide: hide.checked
-			};
-			var lv = length.value;
-			if (lv) prefs.length = +lv;
-			try {
-				prefs.param = JSON.parse(param.value);
-			} catch (e) { }
-			
-			runtime.sendMessage(prefs, function () {
-				window.close();
-			});
-			return false;
-		};
+	function set(values) {
+		wait.checked = values.wait;
+		length.value = values.length;
+		order.value  = values.order;
+		hide.checked = values.hide;
+		params.value = values.params;
+		oninput();
 	}
+	function reset(options) {
+		set(new Values(options));
+	}
+	set(values);
+	
+	order.onscroll = function () {
+		ruler.scrollTop = this.scrollTop;
+		ruler.style.marginLeft = -this.scrollLeft + 'px';
+	};
+	form.oninput  = oninput;
+	form.onchange = oninput;
+	
+	form.onreset = function () {
+		runtime.sendMessage('default', reset);
+		return false;
+	};
+	form.onsubmit = function () {
+		var options = {
+			order: order.value.split(separator),
+			wait: wait.checked,
+			hide: hide.checked
+		};
+		var lv = length.value;
+		if (lv) options.length = +lv;
+		try {
+			options.params = JSON.parse(params.value);
+		} catch (e) { }
+		
+		runtime.sendMessage(options, function () {
+			window.close();
+		});
+		return false;
+	};
+}
+
+runtime.sendMessage('get', function (options) {
+	var values = new Values(options);
 	
 	if ($.readyState == 'loading') {
 		$.addEventListener('readystatechange', function l(e) {
 			this.removeEventListener(e.type, l);
-			ready();
+			ready(values);
 		});
 	} else {
-		ready();
+		ready(values);
 	}
 });
 

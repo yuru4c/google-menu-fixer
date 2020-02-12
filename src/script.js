@@ -71,18 +71,14 @@ Index.prototype.get = function () {
 
 function Item(a, order) {
 	Index.call(this, a, order);
-	var children = a.childNodes;
-	this.children = [];
-	this.children.length = children.length;
-	for (var i = 0; i < this.children.length; i++) {
-		this.children[i] = children[i];
-	}
 }
 Item.prototype.get = function (template) {
 	var a = template.a.create();
 	a.href = this.a.href;
-	for (var i = 0; i < this.children.length; i++) {
-		a.appendChild(this.children[i]);
+	for (; ; ) {
+		var child = this.a.firstChild;
+		if (child == null) break;
+		a.appendChild(child);
 	}
 	return template.close(a);
 };
@@ -114,65 +110,64 @@ function removeAll(as, menu, more) {
 	}
 }
 
-_.runtime.sendMessage('get', function (prefs) {
-	if (prefs.wait) return;
-	var order  = prefs.order;
-	var length = prefs.length;
-	var hide   = prefs.hide;
-	var param  = prefs.param;
+function main(options) {
+	var order  = options.order;
+	var length = options.length;
+	var i;
 	
-	var sheet = $.head.appendChild(style).sheet;
+	var ghm = $.getElementsByTagName(options.params.tag)[0];
+	var parent = ghm.parentNode;
+	var as = parent.querySelectorAll('a[href]');
+	var menu = new Menu(as[0], as[1], ghm, parent);
+	var more = new Menu(as[as.length - 1], as[as.length - 2]);
 	
-	function main() {
-		var ghm = $.getElementsByTagName(param.tag)[0];
-		var parent = ghm.parentNode;
-		var as = parent.querySelectorAll('a[href]');
-		var menu = new Menu(as[0], as[1], ghm, parent);
-		var more = new Menu(as[as.length - 1], as[as.length - 2]);
-		var i;
-		
-		var sel = new Index(findSel(menu, as), order);
-		var items = [sel];
-		for (i = 0; i < as.length; i++) {
-			items.push(new Item(as[i], order));
-		}
-		var l = items.length;
-		if (length < l) l = length;
-		
-		items.sort(compare);
-		i = items.indexOf(sel);
-		if (i >= length) {
-			items.splice(i, 1);
-			items.splice(length - 1, 0, sel);
-		}
-		
-		removeAll(as, menu, more);
-		for (i = 0; i < l; i++) {
-			menu.append(items[i]);
-		}
-		for (; i < items.length; i++) {
-			more.append(items[i]);
-		}
-		if (l == items.length) {
-			ghm.style.display = 'none';
-		}
+	var sel = new Index(findSel(menu, as), order);
+	var items = [sel];
+	for (i = 0; i < as.length; i++) {
+		items.push(new Item(as[i], order));
+	}
+	var l = items.length;
+	if (length < l) l = length;
+	
+	items.sort(compare);
+	i = items.indexOf(sel);
+	if (i >= length) {
+		items.splice(i, 1);
+		items.splice(length - 1, 0, sel);
 	}
 	
-	if (hide) {
-		sheet.insertRule(param.followup + '{ display: none !important; }');
+	removeAll(as, menu, more);
+	for (i = 0; i < l; i++) {
+		menu.append(items[i]);
+	}
+	for (; i < items.length; i++) {
+		more.append(items[i]);
+	}
+	if (l == items.length) {
+		ghm.style.display = 'none';
+	}
+}
+
+_.runtime.sendMessage('get', function (options) {
+	if (options.wait) return;
+	var p = options.params;
+	
+	var sheet = $.head.appendChild(style).sheet;
+	if (options.hide) {
+		sheet.insertRule(p.followup + '{ display: none !important; }');
 	}
 	
 	if ($.readyState == 'loading') {
-		sheet.insertRule(param.selector + '{ visibility: hidden; }');
+		sheet.insertRule(p.selector + '{ visibility: hidden; }');
 		
 		$.addEventListener('readystatechange', function l(e) {
 			this.removeEventListener(e.type, l);
-			main();
+			main(options);
 			
 			sheet.deleteRule(0);
 		});
 	} else {
-		main();
+		main(options);
 	}
 });
 
