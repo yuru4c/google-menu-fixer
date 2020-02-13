@@ -1,7 +1,7 @@
 {
 	"manifest_version": 2,
 	"name": "Google 検索のメニューの順序を固定するやつ",
-	"version": "5.3.1",
+	"version": "5.3.2",
 	"description": "Google 検索のメニューの順序を固定します。「画像はウェブの隣」と手が覚えているあなたへ",
 	"icons": {
 		"128": "icon128.png"

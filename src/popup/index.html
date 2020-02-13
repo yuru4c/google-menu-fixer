@@ -12,32 +12,18 @@
 		#o {
 			padding-left: calc(2ch + 7px);
 		}
-		#p {
-			font-size: inherit;
-			font-family: monospace;
-		}
-		#advanced, #advanced:checked + label ~ * {
-			display: none;
-		}
-		#advanced + label:after {
-			font-family: monospace, sans-serif;
-			content: '[-]';
-		}
-		#advanced:checked + label:after {
-			content: '[+]';
-		}
 	</style>
 </head>
 <body>
 	<form name="options">
 		<p>
-			<label>
-				<input type="checkbox" name="wait"> 更新まで無効にする
-			</label>
-			<label class="margin">長さ:
+			<label><input type="checkbox" name="wait"> 更新まで無効にする</label>
+		</p>
+		<p>
+			<label>長さ:
 				<input type="number" name="length" min="1">
 			</label>
-			<label for="o" class="margin">順序:
+			<label for="o">順序:
 				<span class="gutter">
 					<textarea tabindex="-1" class="ruler" id="ruler"></textarea>
 				</span>
@@ -48,12 +34,11 @@
 			<span class="labels">隠す:
 				<label><input type="checkbox" name="hide"> 他の人はこちらも検索</label>
 			</span>
-			<label for="p" class="labels margin">
-				<input type="checkbox" id="advanced" checked>
-				<label for="advanced">高度な設定 </label><span>:</span>
-				<textarea name="params" rows="8" spellcheck="false" class="wide" id="p"></textarea>
-			</label>
 		</p>
+		<details>
+			<summary>高度な設定</summary>
+			<textarea name="params" rows="8" spellcheck="false" class="wide code"></textarea>
+		</details>
 		<p class="clear">
 			<span class="left" id="out"></span>
 			<input type="reset" class="right">

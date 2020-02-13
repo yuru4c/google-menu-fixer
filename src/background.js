@@ -15,7 +15,7 @@ var keys = {
 		tag: 'g-header-menu'
 	}
 };
-var version = 1;
+var VERSION = 1;
 
 function callback(message, sender, sendResponse) {
 	switch (message) {
@@ -30,7 +30,7 @@ function callback(message, sender, sendResponse) {
 		return;
 	}
 	local.clear(function () {
-		message.version = version;
+		message.version = VERSION;
 		local.set(message, function () {
 			sendResponse();
 		});
@@ -46,10 +46,10 @@ runtime.onInstalled.addListener(function (details) {
 		if (key == null) return;
 		
 		var v = 'version' in items ? items['version'] : 0;
-		if (v != version) {
+		if (v != VERSION) {
 			items.wait = false;
 			items.params = keys.params;
-			items.version = version;
+			items.version = VERSION;
 			local.set(items);
 		}
 	});

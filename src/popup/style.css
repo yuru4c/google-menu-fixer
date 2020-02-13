@@ -4,6 +4,17 @@ body {
 	        user-select: none;
 }
 
+p + details {
+	margin-top: -0.5em;
+}
+summary {
+	outline: none;
+}
+
+label + label {
+	margin-top: 0.5em;
+}
+
 label, textarea {
 	display: block;
 	white-space: nowrap;
@@ -31,11 +42,12 @@ input[type="number"], .ruler {
 	background: none;
 }
 
-.margin {
-	margin-top: 0.5em;
-}
 .labels label {
 	display: inline-block;
+}
+.code {
+	font-size: inherit;
+	font-family: monospace;
 }
 
 .clear:after {

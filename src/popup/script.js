@@ -4,11 +4,11 @@
 var JSON = global.JSON;
 var runtime = _.runtime;
 
-var separator = '\n';
+var SEPARATOR = '\n';
 var re = /\s$/;
 
 function Values(options) {
-	this.order  = options.order.join(separator);
+	this.order  = options.order.join(SEPARATOR);
 	this.length = options.length.toString();
 	this.wait   = options.wait;
 	this.hide   = options.hide;
@@ -19,8 +19,8 @@ function Inputs(wait, length, order, hide, params) {
 	this.order  = order .value;
 	this.length = length.value;
 	this.params = params.value;
-	this.wait   = wait.checked;
-	this.hide   = hide.checked;
+	this.wait = wait.checked;
+	this.hide = hide.checked;
 }
 Inputs.prototype.isDirty = function (values) {
 	for (var key in values) {
@@ -102,7 +102,7 @@ function ready(values) {
 	function oninput() {
 		var inputs = new Inputs(wait, length, order, hide, params);
 		
-		var lines = inputs.order.split(separator);
+		var lines = inputs.order.split(SEPARATOR);
 		var l = lines.length;
 		if (l != current) {
 			ruler.value = marks(l);
@@ -140,7 +140,7 @@ function ready(values) {
 	};
 	form.onsubmit = function () {
 		var options = {
-			order: order.value.split(separator),
+			order: order.value.split(SEPARATOR),
 			wait: wait.checked,
 			hide: hide.checked
 		};
