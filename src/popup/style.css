@@ -7,10 +7,6 @@ body {
 p + details {
 	margin-top: -0.5em;
 }
-summary {
-	outline: none;
-}
-
 label + label {
 	margin-top: 0.5em;
 }
@@ -20,31 +16,40 @@ label, textarea {
 	white-space: nowrap;
 }
 textarea {
-	line-height: 1.2;
 	resize: none;
 }
 input[type="checkbox"] {
 	vertical-align: top;
 }
-input[type="number"], .ruler {
+input[type="number"] {
 	text-align: right;
 }
 
+.list textarea {
+	line-height: 1.2;
+}
 .gutter {
 	display: block;
 	position: absolute;
 	overflow: hidden;
 	pointer-events: none;
 }
-.ruler {
+.gutter textarea {
 	border-color: transparent;
+	text-align: right;
 	overflow: hidden;
 	background: none;
+	color: rgba(84, 84, 84, .5);
 }
 
-.labels label {
+.labels {
 	display: inline-block;
+	vertical-align: top;
 }
+.labels label {
+	margin-top: 0;
+}
+
 .code {
 	font-size: inherit;
 	font-family: monospace;

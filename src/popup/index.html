@@ -7,7 +7,6 @@
 	<style>
 		#ruler {
 			width: 2ch;
-			color: rgba(84, 84, 84, .5);
 		}
 		#o {
 			padding-left: calc(2ch + 7px);
@@ -23,15 +22,15 @@
 			<label>長さ:
 				<input type="number" name="length" min="1">
 			</label>
-			<label for="o">順序:
+			<label for="o" class="list">順序:
 				<span class="gutter">
-					<textarea tabindex="-1" class="ruler" id="ruler"></textarea>
+					<textarea tabindex="-1" id="ruler"></textarea>
 				</span>
 				<textarea name="order" rows="10" class="wide" id="o"></textarea>
 			</label>
 		</p>
-		<p>
-			<span class="labels">隠す:
+		<p>隠す:
+			<span class="labels">
 				<label><input type="checkbox" name="hide"> 他の人はこちらも検索</label>
 			</span>
 		</p>
