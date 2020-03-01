@@ -1,7 +1,8 @@
 (function (global, window, $, _) {
 'use strict';
 
-var JSON = global.JSON;
+var Object = global.Object;
+var JSON   = global.JSON;
 var runtime = _.runtime;
 
 var SEPARATOR = '\n';
@@ -41,7 +42,7 @@ Texts.prototype.writeln = function (str) {
 
 function Linter(lines) {
 	this.lines = lines;
-	this.nums = {};
+	this.nums = Object.create(null);
 }
 Linter.prototype.read = function (i) {
 	var line = this.lines[i];
