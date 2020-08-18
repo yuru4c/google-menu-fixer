@@ -1,4 +1,4 @@
-(function ($, _) {
+(function (window, $, _) {
 'use strict';
 
 var style = $.createElement('style');
@@ -110,16 +110,18 @@ function removeAll(as, menu, more) {
 	}
 }
 
-function main(options) {
-	var order  = options.order;
-	var length = options.length;
-	var i;
-	
-	var ghm = $.getElementsByTagName(options.params.tag)[0];
+function main(ghm, options) {
 	var parent = ghm.parentNode;
 	var as = parent.querySelectorAll('a[href]');
 	var menu = new Menu(as[0], as[1], ghm, parent);
 	var more = new Menu(as[as.length - 1], as[as.length - 2]);
+	if (menu.element == more.element) {
+		return true;
+	}
+	
+	var order  = options.order;
+	var length = options.length;
+	var i;
 	
 	var sel = new Index(findSel(menu, as), order);
 	var items = [sel];
@@ -127,7 +129,9 @@ function main(options) {
 		items.push(new Item(as[i], order));
 	}
 	var l = items.length;
-	if (length < l) l = length;
+	if (length < l) {
+		l = length;
+	}
 	
 	items.sort(compare);
 	i = items.indexOf(sel);
@@ -148,6 +152,42 @@ function main(options) {
 	}
 }
 
+function Hide(sheet, selector) {
+	this.sheet = sheet;
+	this.selector = selector;
+	this.hidden = false;
+}
+Hide.prototype.set = function (hidden) {
+	if (hidden) {
+		if (!this.hidden) {
+			this.sheet.insertRule(this.selector + '{ visibility: hidden; }');
+		}
+	} else {
+		if (this.hidden) {
+			this.sheet.deleteRule(0);
+		}
+	}
+	this.hidden = hidden;
+};
+
+function test(options, hide) {
+	var ghm = $.getElementsByTagName(options.params.tag)[0];
+	
+	if (main(ghm, options)) {
+		hide.set(true);
+		
+		ghm.addEventListener('DOMNodeInserted', function l(e) {
+			this.removeEventListener(e.type, l);
+			window.setTimeout(function () {
+				main(ghm, options);
+				hide.set(false);
+			});
+		});
+	} else {
+		hide.set(false);
+	}
+}
+
 _.runtime.sendMessage('get', function (options) {
 	if (options.wait) return;
 	var p = options.params;
@@ -156,19 +196,18 @@ _.runtime.sendMessage('get', function (options) {
 	if (options.hide) {
 		sheet.insertRule(p.followup + '{ display: none !important; }');
 	}
+	var hide = new Hide(sheet, p.selector);
 	
 	if ($.readyState == 'loading') {
-		sheet.insertRule(p.selector + '{ visibility: hidden; }');
+		hide.set(true);
 		
 		$.addEventListener('readystatechange', function l(e) {
 			this.removeEventListener(e.type, l);
-			main(options);
-			
-			sheet.deleteRule(0);
+			test(options, hide);
 		});
 	} else {
-		main(options);
+		test(options, hide);
 	}
 });
 
-})(document, chrome);
+})(window, document, chrome);

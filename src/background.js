@@ -5,7 +5,7 @@ var runtime = _.runtime;
 var local = _.storage.local;
 
 var keys = {
-	order: ['すべて', '画像', '動画', '地図', 'ニュース', '書籍', 'ショッピング', 'フライト', 'ファイナンス'],
+	order: ['すべて', '画像', '動画', 'ニュース', '地図', 'ショッピング', '書籍', 'フライト', 'ファイナンス'],
 	length: 5,
 	wait: false,
 	hide: false,
@@ -15,7 +15,7 @@ var keys = {
 		tag: 'g-header-menu'
 	}
 };
-var VERSION = 1;
+var VERSION = 2;
 
 function callback(message, sender, sendResponse) {
 	switch (message) {
