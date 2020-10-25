@@ -110,10 +110,21 @@ function removeAll(as, menu, more) {
 	}
 }
 
-function main(ghm, options) {
-	var parent = ghm.parentNode;
-	var as = parent.querySelectorAll('a[href]');
-	var menu = new Menu(as[0], as[1], ghm, parent);
+function Main(ghm) {
+	this.ghm = ghm;
+	
+	var ref = ghm;
+	var parent = ref.parentNode;
+	while (parent.tagName != 'DIV') {
+		ref = parent;
+		parent = ref.parentNode;
+	}
+	this.ref = ref;
+	this.parent = parent;
+}
+Main.prototype.call = function (options) {
+	var as = this.parent.querySelectorAll('a[href]');
+	var menu = new Menu(as[0], as[1], this.ref, this.parent);
 	var more = new Menu(as[as.length - 1], as[as.length - 2]);
 	if (menu.element == more.element) {
 		return true;
@@ -148,9 +159,9 @@ function main(ghm, options) {
 		more.append(items[i]);
 	}
 	if (l == items.length) {
-		ghm.style.display = 'none';
+		this.ghm.style.display = 'none';
 	}
-}
+};
 
 function Hide(sheet, selector) {
 	this.sheet = sheet;
@@ -171,15 +182,16 @@ Hide.prototype.set = function (hidden) {
 };
 
 function test(options, hide) {
-	var ghm = $.getElementsByTagName(options.params.tag)[0];
+	var ghm = $.querySelector(options.params.tag);
+	var main = new Main(ghm);
 	
-	if (main(ghm, options)) {
+	if (main.call(options)) {
 		hide.set(true);
 		
 		ghm.addEventListener('DOMNodeInserted', function l(e) {
 			this.removeEventListener(e.type, l);
 			window.setTimeout(function () {
-				main(ghm, options);
+				main.call(options);
 				hide.set(false);
 			});
 		});

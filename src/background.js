@@ -12,10 +12,10 @@ var keys = {
 	params: {
 		followup: '.exp-outline, .AUiS2',
 		selector: '#hdtb-msb, .tAcEof',
-		tag: 'g-header-menu'
+		tag: 'g-header-menu, g-popup'
 	}
 };
-var VERSION = 2;
+var VERSION = 3;
 
 function callback(message, sender, sendResponse) {
 	switch (message) {
