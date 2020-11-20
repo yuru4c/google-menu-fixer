@@ -183,21 +183,23 @@ Hide.prototype.set = function (hidden) {
 
 function test(options, hide) {
 	var ghm = $.querySelector(options.params.tag);
-	var main = new Main(ghm);
-	
-	if (main.call(options)) {
-		hide.set(true);
+	if (ghm != null) {
+		var main = new Main(ghm);
 		
-		ghm.addEventListener('DOMNodeInserted', function l(e) {
-			this.removeEventListener(e.type, l);
-			window.setTimeout(function () {
-				main.call(options);
-				hide.set(false);
+		if (main.call(options)) {
+			hide.set(true);
+			
+			ghm.addEventListener('DOMNodeInserted', function l(e) {
+				this.removeEventListener(e.type, l);
+				window.setTimeout(function () {
+					main.call(options);
+					hide.set(false);
+				});
 			});
-		});
-	} else {
-		hide.set(false);
+			return;
+		}
 	}
+	hide.set(false);
 }
 
 _.runtime.sendMessage('get', function (options) {
