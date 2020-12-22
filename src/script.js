@@ -83,6 +83,25 @@ Item.prototype.get = function (template) {
 	return template.close(a);
 };
 
+function First(item, more) {
+	this.item = item;
+	var t = more.template.ancestors;
+	this.children = t.length == 0 ? null :
+		more.element.getElementsByTagName(t[t.length - 1].tagName)[0].children;
+}
+First.prototype.get = function (template) {
+	var element = this.item.get(template);
+	if (this.children != null) {
+		for (var i = this.children.length - 1; i >= 0; i--) {
+			var child = this.children[i];
+			if (child.tagName == 'STYLE') {
+				element.insertBefore(child, element.firstChild);
+			}
+		}
+	}
+	return element;
+};
+
 function compare(x, y) {
 	return x.index - y.index;
 }
@@ -149,6 +168,9 @@ Main.prototype.call = function (options) {
 	if (i >= length) {
 		items.splice(i, 1);
 		items.splice(length - 1, 0, sel);
+	}
+	if (l != items.length) {
+		items[l] = new First(items[l], more);
 	}
 	
 	removeAll(as, menu, more);
