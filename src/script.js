@@ -141,24 +141,33 @@ function Main(ghm) {
 	this.ref = ref;
 	this.parent = parent;
 }
-Main.prototype.call = function (options) {
-	var as = this.parent.querySelectorAll('a[href]');
-	var menu = new Menu(as[0], as[1], this.ref, this.parent);
-	var more = new Menu(as[as.length - 1], as[as.length - 2]);
-	if (menu.element == more.element) {
+Main.prototype.exec = function (options) {
+	var matches = this.parent.querySelectorAll('a[href]');
+	var i = matches.length - 1;
+	for (; i >= 0; i--) {
+		if (this.ghm.contains(matches[i])) break;
+	}
+	if (i < 0) {
 		return true;
 	}
 	
-	var order  = options.order;
-	var length = options.length;
-	var i;
+	var as = [];
+	for (; i >= 0; i--) {
+		as[i] = matches[i];
+	}
+	this._exec(options.order, options.length, as);
+};
+Main.prototype._exec = function (order, length, as) {
+	var i = as.length - 1;
+	var menu = new Menu(as[0], as[1], this.ref, this.parent);
+	var more = new Menu(as[i], as[i - 1]);
 	
 	var sel = new Index(findSel(menu, as), order);
-	var items = [sel];
-	for (i = 0; i < as.length; i++) {
-		items.push(new Item(as[i], order));
+	var items = [];
+	for (; i >= 0; i--) {
+		items[i] = new Item(as[i], order);
 	}
-	var l = items.length;
+	var l = items.unshift(sel);
 	if (length < l) {
 		l = length;
 	}
@@ -208,13 +217,13 @@ function test(options, hide) {
 	if (ghm != null) {
 		var main = new Main(ghm);
 		
-		if (main.call(options)) {
+		if (main.exec(options)) {
 			hide.set(true);
 			
 			ghm.addEventListener('DOMNodeInserted', function l(e) {
 				this.removeEventListener(e.type, l);
 				window.setTimeout(function () {
-					main.call(options);
+					main.exec(options);
 					hide.set(false);
 				});
 			});
