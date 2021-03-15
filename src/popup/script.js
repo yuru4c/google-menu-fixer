@@ -6,7 +6,7 @@ var JSON   = global.JSON;
 var runtime = _.runtime;
 
 var SEPARATOR = '\n';
-var re = /\s$/;
+var re = /[\s\xA0]$/;
 
 function Values(options) {
 	this.order  = options.order.join(SEPARATOR);

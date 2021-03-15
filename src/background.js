@@ -5,7 +5,7 @@ var runtime = _.runtime;
 var local = _.storage.local;
 
 var keys = {
-	order: ['すべて', '画像', '動画', 'ニュース', '地図', 'ショッピング', '書籍', 'フライト', 'ファイナンス'],
+	order: ['すべて', '画像', '動画', 'ニュース', '地図', '書籍', 'ショッピング'],
 	length: 5,
 	wait: false,
 	hide: false,

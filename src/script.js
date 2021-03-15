@@ -4,20 +4,27 @@
 var style = $.createElement('style');
 style.type = 'text/css';
 
-function Attribute(name, value) {
-	this.name  = name;
-	this.value = value;
+function testDisplay(node, value) {
+	if (node.nodeType == 1) {
+		return window.getComputedStyle(node).display !=
+			(value == null ? 'none' : value);
+	}
 }
 
-function Element(element, isA) {
+function Attribute(attribute) {
+	this.name  = attribute.name;
+	this.value = attribute.value;
+}
+
+function Element(element, ref) {
 	this.tagName = element.tagName;
 	this.attributes = [];
 	var attributes = element.attributes;
 	for (var i = 0, l = attributes.length; i < l; i++) {
-		var a = attributes[i];
-		var name = a.name;
-		if (isA && name == 'href') continue;
-		this.attributes.push(new Attribute(name, a.value));
+		var a = new Attribute(attributes[i]);
+		if (ref == null || a.value == ref.getAttribute(a.name)) {
+			this.attributes.push(a);
+		}
 	}
 }
 Element.prototype.create = function (child) {
@@ -33,7 +40,7 @@ Element.prototype.create = function (child) {
 };
 
 function Template(a, ancestors) {
-	this.a = new Element(a, true);
+	this.a = a;
 	this.ancestors = ancestors;
 }
 Template.prototype.close = function (a) {
@@ -44,143 +51,165 @@ Template.prototype.close = function (a) {
 	return element;
 };
 
-function Menu(a, b, ref, parent) {
+function Menu(a, b, ref) {
+	var e = new Element(a, b);
 	var ancestors = [];
-	var p = a.parentNode, q = b.parentNode;
+	var p = a.parentNode, q = b.parentNode, n = null;
 	while (p != q) {
 		ancestors.push(new Element(p));
 		p = p.parentNode;
 		q = q.parentNode;
 	}
-	this.template = new Template(a, ancestors);
-	this.element = p;
-	this.ref = parent == p ? ref : null;
+	if (ref != null) {
+		for (n = p.lastChild; n != null; n = n.previousSibling) {
+			if (n.contains(ref)) break;
+		}
+	}
+	this.template = new Template(e, ancestors);
+	this.node = p;
+	this.ref = n;
 }
 Menu.prototype.append = function (item) {
-	this.element.insertBefore(item.get(this.template), this.ref);
+	this.node.insertBefore(item.get(this.template), this.ref);
 };
 
-function Index(a, order) {
+function Show(more, ghm) {
+	var node = more.node;
+	for (; ; ) {
+		var parent = node.parentNode;
+		if (parent == ghm) break;
+		node = parent;
+	}
+	this.style = node.style;
+	this.cssText = this.style.cssText;
+	this.style.display = 'block';
+}
+Show.prototype.undo = function () {
+	this.style.cssText = this.cssText;
+};
+
+function Index(a, i, order) {
 	this.a = a;
-	var index = order.indexOf(a.textContent);
+	this.i = i;
+	var index = order.indexOf(a.innerText);
 	this.index = index == -1 ? order.length : index;
 }
 Index.prototype.get = function () {
 	return this.a;
 };
 
-function Item(a, order) {
-	Index.call(this, a, order);
+function Item(a, i, order) {
+	Index.call(this, a, i, order);
 }
 Item.prototype.get = function (template) {
 	var a = template.a.create();
 	a.href = this.a.href;
 	for (; ; ) {
-		var child = this.a.firstChild;
-		if (child == null) break;
-		a.appendChild(child);
+		var node = this.a.firstChild;
+		if (node == null) break;
+		a.appendChild(node);
 	}
 	return template.close(a);
 };
 
 function First(item, more) {
 	this.item = item;
-	var t = more.template.ancestors;
-	this.children = t.length == 0 ? null :
-		more.element.getElementsByTagName(t[t.length - 1].tagName)[0].children;
+	this.styles = $.createDocumentFragment();
+	var node = more.node.firstChild;
+	for (; node != null; node = node.nextSibling) {
+		if (testDisplay(node)) {
+			for (node = node.firstChild; node != null; ) {
+				var next = node.nextSibling;
+				if (node.nodeName == 'STYLE') {
+					this.styles.appendChild(node);
+				}
+				node = next;
+			}
+			break;
+		}
+	}
 }
 First.prototype.get = function (template) {
 	var element = this.item.get(template);
-	if (this.children != null) {
-		for (var i = this.children.length - 1; i >= 0; i--) {
-			var child = this.children[i];
-			if (child.tagName == 'STYLE') {
-				element.insertBefore(child, element.firstChild);
-			}
-		}
-	}
+	element.insertBefore(this.styles, element.firstChild);
 	return element;
 };
 
 function compare(x, y) {
-	return x.index - y.index;
+	return x.index - y.index || x.i - y.i;
 }
 
-function findSel(menu, as) {
-	var children = menu.element.children;
-	for (var i = 0; i < as.length; i++) {
-		var child = children[i];
-		if (!child.contains(as[i])) {
-			return child;
+function findSel(menu, as, order) {
+	var node = menu.node.firstChild;
+	for (var i = 0; ; ) {
+		if (testDisplay(node)) {
+			if (!node.contains(as[i])) {
+				return new Index(node, i - 0.5, order);
+			}
+			i++;
 		}
+		node = node.nextSibling;
 	}
 }
 function removeAll(as, menu, more) {
-	var m = menu.element, n = more.element;
+	var m = menu.node, n = more.node;
 	for (var i = 0; i < as.length; i++) {
-		for (var a = as[i]; ; ) {
-			var parent = a.parentNode;
+		for (var node = as[i]; ; ) {
+			var parent = node.parentNode;
 			if (parent == m || parent == n) {
-				parent.removeChild(a);
+				parent.removeChild(node);
 				break;
 			}
-			a = parent;
+			node = parent;
 		}
 	}
 }
 
 function Main(ghm) {
 	this.ghm = ghm;
-	
-	var ref = ghm;
-	var parent = ref.parentNode;
-	while (parent.tagName != 'DIV') {
-		ref = parent;
-		parent = ref.parentNode;
+	var node = ghm.parentNode;
+	while (testDisplay(node, 'block')) {
+		node = node.parentNode;
 	}
-	this.ref = ref;
-	this.parent = parent;
+	this.node = node;
 }
-Main.prototype.exec = function (options) {
-	var matches = this.parent.querySelectorAll('a[href]');
-	var i = matches.length - 1;
-	for (; i >= 0; i--) {
-		if (this.ghm.contains(matches[i])) break;
+Main.prototype.exec = function (options, hide) {
+	var matches = this.node.querySelectorAll('a[href]');
+	for (var i = matches.length - 1; i >= 3; i--) {
+		if (this.ghm.contains(matches[i])) {
+			var as = [];
+			for (; i >= 0; i--) {
+				as[i] = matches[i];
+			}
+			hide.set(false);
+			this._exec(options.order, options.length, as);
+			return true;
+		}
 	}
-	if (i < 0) {
-		return true;
-	}
-	
-	var as = [];
-	for (; i >= 0; i--) {
-		as[i] = matches[i];
-	}
-	this._exec(options.order, options.length, as);
 };
 Main.prototype._exec = function (order, length, as) {
 	var i = as.length - 1;
-	var menu = new Menu(as[0], as[1], this.ref, this.parent);
+	var menu = new Menu(as[0], as[1], this.ghm);
 	var more = new Menu(as[i], as[i - 1]);
+	var sel = findSel(menu, as, order);
+	var show = new Show(more, this.ghm);
 	
-	var sel = new Index(findSel(menu, as), order);
 	var items = [];
 	for (; i >= 0; i--) {
-		items[i] = new Item(as[i], order);
+		items[i] = new Item(as[i], i, order);
 	}
-	var l = items.unshift(sel);
-	if (length < l) {
-		l = length;
-	}
-	
-	items.sort(compare);
-	i = items.indexOf(sel);
+	var l = items.push(sel);
+	i = items.sort(compare).indexOf(sel);
 	if (i >= length) {
 		items.splice(i, 1);
 		items.splice(length - 1, 0, sel);
 	}
-	if (l != items.length) {
+	
+	if (length < l) {
+		l = length;
 		items[l] = new First(items[l], more);
 	}
+	show.undo();
 	
 	removeAll(as, menu, more);
 	for (i = 0; i < l; i++) {
@@ -214,30 +243,28 @@ Hide.prototype.set = function (hidden) {
 
 function test(options, hide) {
 	var ghm = $.querySelector(options.params.tag);
-	if (ghm != null) {
-		var main = new Main(ghm);
-		
-		if (main.exec(options)) {
-			hide.set(true);
-			
-			ghm.addEventListener('DOMNodeInserted', function l(e) {
-				this.removeEventListener(e.type, l);
-				window.setTimeout(function () {
-					main.exec(options);
-					hide.set(false);
-				});
-			});
-			return;
-		}
+	if (ghm == null) {
+		hide.set(false);
+		return;
 	}
-	hide.set(false);
+	var main = new Main(ghm);
+	if (!main.exec(options, hide)) {
+		hide.set(true);
+		
+		ghm.addEventListener('DOMNodeInserted', function l(e) {
+			this.removeEventListener(e.type, l);
+			window.setTimeout(function () {
+				main.exec(options, hide);
+			});
+		});
+	}
 }
 
 _.runtime.sendMessage('get', function (options) {
 	if (options.wait) return;
-	var p = options.params;
-	
 	var sheet = $.head.appendChild(style).sheet;
+	
+	var p = options.params;
 	if (options.hide) {
 		sheet.insertRule(p.followup + '{ display: none !important; }');
 	}
