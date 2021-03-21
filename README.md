@@ -1,5 +1,5 @@
 # google-menu-fixer
-[Google 検索のメニューの順序を固定するやつ - Chrome ウェブストア](https://chrome.google.com/webstore/detail/dgonbchckfmcfhgehahdpfmjbmgadjea)
+[検索メニュー固定器 - Chrome ウェブストア](https://chrome.google.com/webstore/detail/dgonbchckfmcfhgehahdpfmjbmgadjea)
 
 ## 概要
 Google 検索のメニューの順序を固定します。
