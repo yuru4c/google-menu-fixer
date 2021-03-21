@@ -91,7 +91,7 @@ Show.prototype.undo = function () {
 function Index(a, i, order) {
 	this.a = a;
 	this.i = i;
-	var index = order.indexOf(a.innerText);
+	var index = order.indexOf(a.innerText.trim());
 	this.index = index == -1 ? order.length : index;
 }
 Index.prototype.get = function () {
