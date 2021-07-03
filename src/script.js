@@ -242,7 +242,15 @@ Hide.prototype.set = function (hidden) {
 };
 
 function test(options, hide) {
-	var ghm = $.querySelector(options.params.tag);
+	var ghm;
+	var elements = $.querySelectorAll(options.params.tag);
+	for (var i = 0; i < elements.length; i++) {
+		var element = elements[i];
+		if (element.offsetWidth && element.offsetHeight) {
+			ghm = element;
+			break;
+		}
+	}
 	if (ghm == null) {
 		hide.set(false);
 		return;
@@ -255,6 +263,7 @@ function test(options, hide) {
 			this.removeEventListener(e.type, l);
 			window.setTimeout(function () {
 				main.exec(options, hide);
+				hide.set(false);
 			});
 		});
 	}
