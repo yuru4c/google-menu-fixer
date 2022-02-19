@@ -15,7 +15,7 @@ var keys = {
 		tag: 'g-header-menu, g-popup'
 	}
 };
-var VERSION = 4;
+var VERSION = 5;
 
 function callback(message, sender, sendResponse) {
 	switch (message) {

@@ -10,6 +10,11 @@ function testDisplay(node, value) {
 			(value == null ? 'none' : value);
 	}
 }
+function testSize(node) {
+	if (node.nodeType == 1) {
+		return node.offsetWidth > 1 && node.offsetHeight > 1;
+	}
+}
 
 function Attribute(attribute) {
 	this.name  = attribute.name;
@@ -142,7 +147,7 @@ function compare(x, y) {
 function findSel(menu, as, order) {
 	var node = menu.node.firstChild;
 	for (var i = 0; ; ) {
-		if (testDisplay(node)) {
+		if (testSize(node)) {
 			if (!node.contains(as[i])) {
 				return new Index(node, i - 0.5, order);
 			}
@@ -246,7 +251,7 @@ function test(options, hide) {
 	var elements = $.querySelectorAll(options.params.tag);
 	for (var i = 0; i < elements.length; i++) {
 		var element = elements[i];
-		if (element.offsetWidth && element.offsetHeight) {
+		if (testSize(element)) {
 			ghm = element;
 			break;
 		}
