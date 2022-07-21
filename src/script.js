@@ -173,7 +173,7 @@ function removeAll(as, menu, more) {
 function Main(ghm) {
 	this.ghm = ghm;
 	var node = ghm.parentNode;
-	while (testDisplay(node, 'block')) {
+	while (node.tagName != 'DIV') {
 		node = node.parentNode;
 	}
 	this.node = node;
